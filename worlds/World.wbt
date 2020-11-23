@@ -1,0 +1,29 @@
+#VRML_SIM R2020b utf8
+WorldInfo {
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  orientation 0.23148626644799014 0.9276262992911976 0.2931272032911439 4.385460128687119
+  position -4.721923068932493 2.9279843311806024 -0.3809424398383533
+}
+TexturedBackground {
+  texture "empty_office"
+}
+TexturedBackgroundLight {
+  texture "empty_office"
+}
+Table {
+  translation 0.02 -0.81 0
+  size 2 0.8 2
+}
+Floor {
+  size 1.7 1.7
+  tileSize 1.7 1.7
+  appearance Appearance {
+    texture ImageTexture {
+      url [
+        "C:/Users/Acer/Desktop/5podlaha-2.png"
+      ]
+    }
+  }
+}
