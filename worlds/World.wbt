@@ -22,7 +22,7 @@ Floor {
   appearance Appearance {
     texture ImageTexture {
       url [
-        "C:/Users/Acer/Desktop/5podlaha-2.png"
+        "resources/playing_field.png"
       ]
     }
   }
