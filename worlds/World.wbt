@@ -3,8 +3,8 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 0.4863347975834697 0.8654210487325313 0.12051918133695984 5.678679961652497
-  position -0.16997501487172673 0.2870629554756801 0.5103227974195175
+  orientation 0.3553218605981733 0.9199050160357543 0.1658949572871667 5.308388508627054
+  position -0.42306980861088367 0.3530859921115317 0.41695471417427604
 }
 TexturedBackground {
   texture "empty_office"
@@ -21,14 +21,9 @@ DEF Can Solid {
   children [
     Shape {
       appearance Appearance {
-        material Material {
-          ambientIntensity 1
-          shininess 0.1
-          specularColor 1 0 0
-        }
         texture ImageTexture {
           url [
-            "C:/Users/Acer/Desktop/Can .png"
+            "resources/Can .png"
           ]
         }
       }
