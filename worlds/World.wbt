@@ -3,8 +3,8 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 0.9598108484347655 0.2778992386441397 0.03918096971672902 5.878907305476042
-  position -0.32231758610760197 1.117229296110768 3.1083299657014085
+  orientation -0.13333144295383323 0.9854159729301478 0.10572647073452775 1.2953314702285263
+  position 1.1757597989479187 0.4168351565685337 0.41786344484379323
 }
 TexturedBackground {
   texture "empty_office"
@@ -15,6 +15,30 @@ TexturedBackgroundLight {
 Table {
   translation 0.02 -0.81 0
   size 1.7 0.8 1.7
+}
+Solid {
+  translation 0 0.14 0.07
+  children [
+    Shape {
+      appearance Appearance {
+        texture ImageTexture {
+          url [
+            "textures/steel_floor.jpg"
+          ]
+        }
+      }
+      geometry Cylinder {
+        height 0.075
+        radius 0.0275
+      }
+    }
+  ]
+  boundingObject Shape {
+    geometry Cylinder {
+      height 0.075
+      radius 0.0275
+    }
+  }
 }
 Floor {
   size 1.7 1.7
