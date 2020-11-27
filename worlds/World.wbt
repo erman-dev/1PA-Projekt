@@ -3,8 +3,8 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 0.3293650814343903 0.9291263940919744 0.16805590419072663 5.243661971192666
-  position -0.4485543472423517 0.3530859921115317 0.3791413483328472
+  orientation 0.7506925300569942 0.6461690515394398 0.13757282489376116 5.73047562543131
+  position -0.7889112453265699 0.8603560159464463 2.0978764130028673
 }
 TexturedBackground {
   texture "empty_office"
@@ -16,10 +16,10 @@ Table {
   translation 0.02 -0.81 0
   size 1.7 0.8 1.7
 }
-DEF Can Solid {
-  translation 0 0.14 0.07
+Solid {
+  translation 0 0.04 0.19
   children [
-    Shape {
+    DEF Can Shape {
       appearance Appearance {
         texture ImageTexture {
           url [
@@ -27,17 +27,54 @@ DEF Can Solid {
           ]
         }
       }
-      geometry Cylinder {
+      geometry DEF geometry Cylinder {
         height 0.075
         radius 0.0275
       }
     }
   ]
-  boundingObject Shape {
-    geometry Cylinder {
-      height 0.075
-      radius 0.0275
-    }
+  name "Can"
+  boundingObject USE geometry
+  physics Physics {
+  }
+}
+Solid {
+  translation 0 0.04 -0.19
+  children [
+    USE Can
+  ]
+  name "solid(1)"
+  boundingObject USE geometry
+  physics Physics {
+  }
+}
+Solid {
+  translation -0.19 0.04 0
+  children [
+    USE Can
+  ]
+  boundingObject USE geometry
+  physics Physics {
+  }
+}
+Solid {
+  translation 0.19 0.04 0
+  children [
+    USE Can
+  ]
+  name "solid(2)"
+  boundingObject USE geometry
+  physics Physics {
+  }
+}
+Solid {
+  translation -0.38 0.04 -0.19
+  children [
+    USE Can
+  ]
+  name "solid(3)"
+  boundingObject USE geometry
+  physics Physics {
   }
 }
 Floor {
@@ -49,5 +86,25 @@ Floor {
         "resources/playing_field.png"
       ]
     }
+  }
+}
+Solid {
+  translation 0.38 0.04 0.19
+  children [
+    USE Can
+  ]
+  name "solid(4)"
+  boundingObject USE geometry
+  physics Physics {
+  }
+}
+Solid {
+  translation -0.38 0.04 0
+  children [
+    USE Can
+  ]
+  name "solid(5)"
+  boundingObject USE geometry
+  physics Physics {
   }
 }
