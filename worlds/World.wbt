@@ -3,8 +3,8 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 0.23148626644799014 0.9276262992911976 0.2931272032911439 4.385460128687119
-  position -4.721923068932493 2.9279843311806024 -0.3809424398383533
+  orientation 0.7506925300569942 0.6461690515394398 0.13757282489376116 5.73047562543131
+  position -0.7889112453265699 0.8603560159464463 2.0978764130028673
 }
 TexturedBackground {
   texture "empty_office"
@@ -14,7 +14,68 @@ TexturedBackgroundLight {
 }
 Table {
   translation 0.02 -0.81 0
-  size 2 0.8 2
+  size 1.7 0.8 1.7
+}
+Solid {
+  translation 0 0.04 0.19
+  children [
+    DEF Can Shape {
+      appearance Appearance {
+        texture ImageTexture {
+          url [
+            "resources/Can .png"
+          ]
+        }
+      }
+      geometry DEF geometry Cylinder {
+        height 0.075
+        radius 0.0275
+      }
+    }
+  ]
+  name "Can"
+  boundingObject USE geometry
+  physics Physics {
+  }
+}
+Solid {
+  translation 0 0.04 -0.19
+  children [
+    USE Can
+  ]
+  name "solid(1)"
+  boundingObject USE geometry
+  physics Physics {
+  }
+}
+Solid {
+  translation -0.19 0.04 0
+  children [
+    USE Can
+  ]
+  boundingObject USE geometry
+  physics Physics {
+  }
+}
+Solid {
+  translation 0.19 0.04 0
+  children [
+    USE Can
+  ]
+  name "solid(2)"
+  boundingObject USE geometry
+  physics Physics {
+  }
+}
+Solid {
+  translation -0.38 0.04 -0.19
+  children [
+    USE Can
+  ]
+  name "solid(3)"
+  boundingObject USE geometry
+  physics Physics {
+  }
 }
 Floor {
   size 1.7 1.7
@@ -22,8 +83,28 @@ Floor {
   appearance Appearance {
     texture ImageTexture {
       url [
-        "C:/Users/Acer/Desktop/5podlaha-2.png"
+        "resources/playing_field.png"
       ]
     }
+  }
+}
+Solid {
+  translation 0.38 0.04 0.19
+  children [
+    USE Can
+  ]
+  name "solid(4)"
+  boundingObject USE geometry
+  physics Physics {
+  }
+}
+Solid {
+  translation -0.38 0.04 0
+  children [
+    USE Can
+  ]
+  name "solid(5)"
+  boundingObject USE geometry
+  physics Physics {
   }
 }
