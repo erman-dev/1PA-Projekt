@@ -1,0 +1,33 @@
+#VRML_OBJ R2020b utf8
+DEF can Solid {
+  translation 0 0.0375 0
+  children [
+    DEF can Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.75
+          diffuseColor 1 1 1
+          shininess 1
+        }
+        texture ImageTexture {
+          url [
+            "resources/can.png"
+          ]
+          repeatS FALSE
+          repeatT FALSE
+        }
+      }
+      geometry Cylinder {
+        height 0.075
+        radius 0.0275
+      }
+    }
+  ]
+  boundingObject USE can
+  physics DEF physics_can Physics {
+    density -1
+    mass 0.15
+    damping Damping {
+    }
+  }
+}
