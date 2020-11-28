@@ -3,8 +3,10 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation -0.046252089763355174 0.95609787531401 0.2893744926778422 2.8315146508182876
-  position 0.5217456287788927 1.8150194303824987 -3.2265301041629253
+  orientation 0.6180816272612321 0.6306668646165885 0.46929138913556606 4.69679082837569
+  position -0.4790644716929938 1.2728499589004465 0.5737749777324195
+  follow "floor"
+  followType "Mounted Shot"
 }
 TexturedBackground {
   texture "empty_office"
@@ -16,66 +18,6 @@ Table {
   translation 0 -0.801 0
   size 2 0.8 2
 }
-Solid {
-  translation 0 0.04 0.19
-  children [
-    DEF Can Shape {
-      appearance Appearance {
-        texture ImageTexture {
-          url [
-            "resources/Can .png"
-          ]
-        }
-      }
-      geometry DEF geometry Cylinder {
-        height 0.075
-        radius 0.0275
-      }
-    }
-  ]
-  name "Can"
-  boundingObject USE geometry
-  physics Physics {
-  }
-}
-Solid {
-  translation 0 0.04 -0.19
-  children [
-    USE Can
-  ]
-  name "solid(1)"
-  boundingObject USE geometry
-  physics Physics {
-  }
-}
-Solid {
-  translation -0.19 0.04 0
-  children [
-    USE Can
-  ]
-  boundingObject USE geometry
-  physics Physics {
-  }
-}
-Solid {
-  translation 0.19 0.04 0
-  children [
-    USE Can
-  ]
-  name "solid(2)"
-  boundingObject USE geometry
-  physics Physics {
-  }
-}
-Solid {
-  translation -0.38 0.04 -0.19
-  children [
-    USE Can
-  ]
-  name "solid(3)"
-  boundingObject USE geometry
-  physics Physics {
-  }
 Floor {
   size 2 2
   tileSize 2 2
@@ -88,7 +30,7 @@ Floor {
   }
 }
 DEF Ketchup_robot Robot {
-  translation 0 0.44 -0.01
+  translation 0 0.03 0.61
   children [
     Transform {
       children [
@@ -156,14 +98,17 @@ DEF Ketchup_robot Robot {
     }
     HingeJoint {
       jointParameters HingeJointParameters {
+        axis -1 0 0
+        anchor -0.07 0.04 -0.07
       }
       device [
-        DEF motor_left RotationalMotor {
+        RotationalMotor {
+          name "motor_left"
         }
       ]
       endPoint Solid {
-        translation -0.07 0.03 -0.07
-        rotation 0 0 1 1.5708
+        translation -0.07 0.03999999999999998 -0.07
+        rotation 0 0 1 1.570790306100425
         children [
           DEF wheel Shape {
             appearance PBRAppearance {
@@ -183,6 +128,8 @@ DEF Ketchup_robot Robot {
     }
     HingeJoint {
       jointParameters HingeJointParameters {
+        axis -1 0 0
+        anchor 0.07 0.04 -0.07
       }
       device [
         RotationalMotor {
@@ -190,7 +137,7 @@ DEF Ketchup_robot Robot {
         }
       ]
       endPoint DEF wheel_right Solid {
-        translation 0.07 0.02 -0.07
+        translation 0.07 0.04 -0.07
         rotation 0 0 1 1.5707996938995747
         children [
           USE wheel
@@ -204,26 +151,103 @@ DEF Ketchup_robot Robot {
   boundingObject USE body
   physics Physics {
   }
+  controller "ketchup_house_controller"
 }
-
-
-Solid {
-  translation 0.38 0.04 0.19
+DEF can Solid {
+  translation 0 0.0375 0
   children [
-    USE Can
+    DEF can Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.75
+          diffuseColor 1 1 1
+          shininess 1
+        }
+        texture ImageTexture {
+          url [
+            "resources/can.png"
+          ]
+          repeatS FALSE
+          repeatT FALSE
+        }
+      }
+      geometry Cylinder {
+        height 0.075
+        radius 0.0275
+      }
+    }
   ]
-  name "solid(4)"
-  boundingObject USE geometry
-  physics Physics {
+  boundingObject USE can
+  physics DEF physics_can Physics {
+    density -1
+    mass 0.15
+    damping Damping {
+    }
   }
 }
-Solid {
-  translation -0.38 0.04 0
+DEF can Solid {
+  translation 0 0.0375 0.13
   children [
-    USE Can
+    DEF can Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.75
+          diffuseColor 1 1 1
+          shininess 1
+        }
+        texture ImageTexture {
+          url [
+            "resources/can.png"
+          ]
+          repeatS FALSE
+          repeatT FALSE
+        }
+      }
+      geometry Cylinder {
+        height 0.075
+        radius 0.0275
+      }
+    }
   ]
-  name "solid(5)"
-  boundingObject USE geometry
-  physics Physics {
+  name "solid(1)"
+  boundingObject USE can
+  physics DEF physics_can Physics {
+    density -1
+    mass 0.15
+    damping Damping {
+    }
+  }
+}
+DEF can Solid {
+  translation 0 0.0375 0.26
+  children [
+    DEF can Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.75
+          diffuseColor 1 1 1
+          shininess 1
+        }
+        texture ImageTexture {
+          url [
+            "resources/can.png"
+          ]
+          repeatS FALSE
+          repeatT FALSE
+        }
+      }
+      geometry Cylinder {
+        height 0.075
+        radius 0.0275
+      }
+    }
+  ]
+  name "solid(2)"
+  boundingObject USE can
+  physics DEF physics_can Physics {
+    density -1
+    mass 0.15
+    damping Damping {
+    }
   }
 }
