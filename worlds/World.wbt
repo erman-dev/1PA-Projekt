@@ -3,8 +3,8 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 1 0 0 4.71238898038469
-  position 0.4500225653436611 3.38422700849124 0.21999439767397944
+  orientation 0.9989326483384007 0.04369222417388367 0.014985113625456552 5.621733271651041
+  position -0.06872957607873573 1.843661550271771 2.8314511123374912
   follow "floor"
   followType "Mounted Shot"
 }
@@ -30,8 +30,8 @@ Floor {
   }
 }
 DEF Ketchup_robot Robot {
-  translation -0.09 0.0075 0.66
-  rotation 0 1 0 -1.5707953071795862
+  translation -0.0822354 0.0075 0.688977
+  rotation 0 1 0 -1.3089953071795861
   children [
     DEF body Transform {
       children [
@@ -77,7 +77,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint Solid {
         translation -0.07 0.02 -0.0875
-        rotation 0 0 1 1.5707903061004211
+        rotation 7.85048592614307e-17 1.570097185228614e-16 1 1.5707903061004211
         children [
           DEF wheel Shape {
             appearance PBRAppearance {
@@ -108,7 +108,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint DEF wheel_right Solid {
         translation 0.07 0.02 -0.0875
-        rotation 5.288019275994139e-09 -2.0687338680123344e-10 1 1.5707996810992417
+        rotation 5.288019747021084e-09 -2.0687322979225082e-10 1 1.5707996810992417
         children [
           USE wheel
         ]
@@ -126,10 +126,11 @@ DEF Ketchup_robot Robot {
         1 1000 0
       ]
       type "laser"
+      resolution 100
     }
     Compass {
+      xAxis FALSE
       yAxis FALSE
-      zAxis FALSE
     }
   ]
   boundingObject USE body
