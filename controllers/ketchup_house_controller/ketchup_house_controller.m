@@ -27,6 +27,7 @@ dst_front = wb_robot_get_device('dst_front');
 distance_prev = 10000
 nearest_cans=[];
 nearest = [];
+localized_cans = zeros(7);
 % Example position matrix
 % 1 - represents cans
 % 2 - represents robot
@@ -64,12 +65,11 @@ if angle(3) < 2
     
     if abs(diff([distance distance_prev])) > 0 && distance ~= 1000
     
-     wb_console_print(sprintf('diff is %f\n', diff([distance distance_prev])), WB_STDOUT);
-    
+     %wb_console_print(sprintf('diff is %f\n', diff([distance distance_prev])), WB_STDOUT);
+     %wb_console_print(sprintf('Compass value is %f\n', angle(3)), WB_STDOUT); 
     nearest_cans = [nearest_cans; distance angle(3)];
     end
     distance_prev = distance
-    
     
    % wb_console_print(sprintf('nearest_cans is %f\n', nearest_cans), WB_STDOUT);
     if angle(3) > 0.88
@@ -86,20 +86,74 @@ if angle(3) < 2
            nearest = [nearest; nearest_cans(can_position_in_matrix, :)];
          end
           cans_to_deliver = nearest (1:3,:)
+         
 
-       wb_console_print(sprintf('deliver is %f\n', cans_to_deliver), WB_STDOUT);
-     end
-     
-     
-   
-   
-   
-   
-   end
-end
+        for i = 1:3
+         if cans_to_deliver(i, 2) < (0.1) && cans_to_deliver(i, 2) > (-0.2)
+             if cans_to_deliver(i, 1) == 300
+                localized_cans(5, 4) = 1;
+             elseif cans_to_deliver(i, 1) == 600
+                localized_cans(4, 4) = 1; 
+             elseif cans_to_deliver(i, 1) == 800
+                localized_cans(3, 4) = 1;
+             end
+         elseif cans_to_deliver(i, 2) >= (0.1)
+             if cans_to_deliver(i, 1) == 400
+                 localized_cans(5, 3) = 1;
+             elseif cans_to_deliver(i, 1) == 500
+                 localized_cans(5, 2) = 1; 
+             elseif cans_to_deliver(i, 1) == 600
+                 localized_cans(4, 3) = 1;
+             elseif cans_to_deliver(i, 1) == 900
+                 localized_cans(3, 2) = 1;
+             elseif cans_to_deliver(i, 1) == 700 
+              if T(i, 2) <= (0.6)
+                 localized_cans(4, 2) = 1;
+             elseif cans_to_deliver(i, 2) > (0.6)
+                 localized_cans(5, 1) = 1;  
+              end
+            elseif cans_to_deliver(i, 1) == 800
+             if cans_to_deliver(i, 2) <= (0.4)
+              localized_cans(3, 3) = 1;  
+            elseif cans_to_deliver(i, 2) > (0.4)
+              localized_cans(4, 1) = 1;  
+             end
+            end
+        elseif cans_to_deliver(i, 2) <= (-0.2)
+             if cans_to_deliver(i, 1) == 400
+                localized_cans(5, 5) = 1;
+             elseif cans_to_deliver(i, 1) == 500
+                localized_cans(5, 6) = 1; 
+             elseif cans_to_deliver(i, 1) == 600
+                localized_cans(4, 5) = 1;
+             elseif cans_to_deliver(i, 1) == 900
+                localized_cans(3, 6) = 1;
+             elseif cans_to_deliver(i, 1) == 700
+                if cans_to_deliver(i, 2) >= (-0.7)
+                    localized_cans(4, 6) = 1;
+                elseif cans_to_deliver(i, 2) < (-0.7)
+                    localized_cans(5, 7) = 1;
+                end
+             elseif cans_to_deliver(i, 1) == 800
+                if cans_to_deliver(i, 2) >= (-0.5)
+                    localized_cans(3, 5) = 1;  
+                elseif cans_to_deliver(i, 2) < (-0.5)
+                    localized_cans(4, 7) = 1;
+                end
+             end 
+         end
+         %wb_console_print(sprintf('localized_cans is %f\n', localized_cans), WB_STDOUT);
+         %wb_console_print(sprintf('konec is %f\n', 99999999), WB_STDOUT);
+        end
+        
+       
+    end
+       %wb_console_print(sprintf('deliver is %f\n', cans_to_deliver), WB_STDOUT);
+      
+    end
 
 
-  
+ end 
   % send actuator commands, e.g.
   %  wb_motor_set_postion(motor, 10.0);
 
