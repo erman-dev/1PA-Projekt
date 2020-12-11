@@ -8,16 +8,21 @@ classdef CanBot < handle
         infra_right 
         TIME_STEP = 64
         bearing
-        turn_slow_down_angle = 10  %deg
-        turn_angle_precision = 0.4 %deg
-        speed_default = 4   	   %rad/s
+        storage_positions
+        turn_slow_down_angle = 15  %deg
+        turn_angle_precision = 5 %deg
+        speed_default = 6   	   %rad/s
         diff_threshold = 50        %ir sensor value
         position = [7 4]           %7th row 4th column
     end
 
     methods
         function h = CanBot(motor_left_handle, motor_right_handle, dst_front_handle, ...
-                            compass_handle, infra_left_handle, infra_right_handle)
+                            compass_handle, infra_left_handle, infra_right_handle, storage_positions)
+            
+            % Set positions in which the robot will store cans
+            h.storage_positions = storage_positions;
+
             % Get all robot devices 
             h.motor_left = wb_robot_get_device(motor_left_handle);
             h.motor_right = wb_robot_get_device(motor_right_handle);
@@ -43,6 +48,7 @@ classdef CanBot < handle
             % Robot travel specified amount of lines (steps) forward
             % The default state is that the robot is standing on a line
             steps_to_travel = steps;
+            direction = sign(steps);
             robot_bearing = h.get_bearing();
             ir_prev = 1000;
             on_line = false;
@@ -50,8 +56,8 @@ classdef CanBot < handle
 
             wb_console_print(sprintf('I am travelling %d lines forward', steps), WB_STDOUT);
 
-            wb_motor_set_velocity(h.motor_left, h.speed_default);
-            wb_motor_set_velocity(h.motor_right, h.speed_default);
+            wb_motor_set_velocity(h.motor_left, h.speed_default*direction);
+            wb_motor_set_velocity(h.motor_right, h.speed_default*direction);
 
             nr_measurements = 0;
 
@@ -62,8 +68,8 @@ classdef CanBot < handle
                 ir_diff = diff([ir_prev ir_rep]);
                 nr_measurements = nr_measurements + 1;
 
-                wb_console_print(sprintf('DEBUG: ir_rep %f', ir_rep), WB_STDOUT);
-                wb_console_print(sprintf('DEBUG: ir_diff %f', ir_diff), WB_STDOUT);
+                %wb_console_print(sprintf('DEBUG: ir_rep %f', ir_rep), WB_STDOUT);
+                %wb_console_print(sprintf('DEBUG: ir_diff %f', ir_diff), WB_STDOUT);
                     
                 if (ir_diff > h.diff_threshold)
                     on_line = true;
@@ -71,19 +77,20 @@ classdef CanBot < handle
                     off_line = true;
                 end
 
+                % Ignore if the robot detects a line in the first 10 measurements
                 if (on_line && off_line && nr_measurements < 10)
                     on_line = false;
                     off_line = false;
-                    
+
                 elseif (on_line && off_line)
-                    h.position = h.position + robot_bearing;
-                    steps_to_travel = steps_to_travel - 1;
+                    h.position = h.position + robot_bearing*direction;
+                    steps_to_travel = steps_to_travel - sign(steps_to_travel);
                     wb_console_print(sprintf('I have reached a line. %d to go', steps_to_travel), WB_STDOUT);
                     on_line = false;
                     off_line = false;
                 end
 
-                if (steps_to_travel <= 0)
+                if (steps_to_travel == 0)
                     wb_motor_set_velocity(h.motor_left, 0);
                     wb_motor_set_velocity(h.motor_right, 0);
                     break;
@@ -105,30 +112,36 @@ classdef CanBot < handle
             elseif ( isequal(bearing, [0 -1]))
                 t_angle = 270;
             else
-                error('Wrong bearing value');
+                error('Invalid bearing value [%d,%d]', bearing(1), bearing(2));
             end
 
-            r_angle = h.get_angle();
+            r_angle = h.get_angle();    
+
+            if ( abs(r_angle - t_angle) < 5 )
+                wb_console_print(sprintf('No aligmnet needed'), WB_STDOUT);
+                return;
+            end
 
             % Calculate the angular difference between two angle
             % in CW direction and in CCW direction
-            ccw_angle = r_angle - t_angle;
-            cw_angle = t_angle - r_angle;
+            ccw_angle = round(r_angle, -1) - t_angle;
+            cw_angle = t_angle - round(r_angle, -1);
 
             if cw_angle < 0 
-                cw_angle = ccw_angle + 360;
+                cw_angle = cw_angle + 360;
             end
 
             if ccw_angle < 0 
                 ccw_angle = ccw_angle + 360;
             end
 
-            if (ccw_angle > cw_angle)
-                rotation_direction = -1;
-            else
+            if (ccw_angle < cw_angle)
                 rotation_direction = 1;
+            else
+                rotation_direction = -1;
             end
 
+            wb_console_print(sprintf('CW %f, CCW %f', cw_angle, ccw_angle), WB_STDOUT);
             wb_console_print(sprintf('Robot angle %d', r_angle), WB_STDOUT);
             wb_console_print(sprintf('Target angle %d', t_angle), WB_STDOUT);
 
@@ -152,14 +165,15 @@ classdef CanBot < handle
                 end
 
                 if (abs(r_angle - t_angle) < h.turn_angle_precision)
-                    wb_motor_set_velocity(h.motor_left, h.speed_default*rotation_direction*-1/16);
-                    wb_motor_set_velocity(h.motor_right, h.speed_default*rotation_direction/16);
+                    wb_motor_set_velocity(h.motor_left, h.speed_default*rotation_direction*-1/20);
+                    wb_motor_set_velocity(h.motor_right, h.speed_default*rotation_direction/20);
                 end
 
-                %wb_console_print(sprintf('Diff %f Prev %f', angle_diff, angle_prev), WB_STDOUT);
-                %wb_console_print(sprintf('Diff num %f', abs(diff([angle_diff angle_prev]))), WB_STDOUT);
+                wb_console_print(sprintf('Anle %f', r_angle), WB_STDOUT);
+                wb_console_print(sprintf('Diff %f Prev %f', angle_diff, angle_prev), WB_STDOUT);
+                wb_console_print(sprintf('Diff num %f', abs(diff([angle_diff angle_prev]))), WB_STDOUT);
 
-                if ( sign(angle_diff) ~= sign(angle_prev) || abs(diff([angle_diff angle_prev])) > 350 )
+                if ( sign(angle_diff) ~= sign(angle_prev) || abs(diff([angle_diff angle_prev])) > 300 )
                     wb_motor_set_velocity(h.motor_left, 0);
                     wb_motor_set_velocity(h.motor_right, 0);
                     break;
@@ -167,6 +181,22 @@ classdef CanBot < handle
 
                 angle_prev = angle_diff;
             end
+        end
+
+        function store_cans(h)
+            storage = h.storage_positions(1,:);
+            h.storage_positions(1,:) = [];
+
+            storage_coords = storage(1:2);
+            storage_alignment = storage(3:4);
+
+            wb_console_print(sprintf('Saving cans in %d,%d alignment %d,%d', storage_coords, storage_alignment), WB_STDOUT);
+
+            h.go_coordinates(storage_coords)
+            h.align(storage_alignment)
+            h.travel(-1);
+            h.align([-1 0]);
+
         end
 
         function deg_bearing = get_angle(h)
@@ -227,26 +257,44 @@ classdef CanBot < handle
             % -> 0: the robot is completly missaligned
             matching_coordinate = find(robot_bearing == target_bearing);
 
-            wb_console_print(sprintf('Traveling from %d,%d to %d,%d', h.position(1), h.position(2), target_coords(1), target_coords(2)), WB_STDOUT);
+            wb_console_print(sprintf('Traveling from %d,%d to %d,%d target bearing %d,%d', h.position(1), h.position(2), target_coords(1), target_coords(2), target_bearing(1), target_bearing(2)), WB_STDOUT);
 
+            % The robot is not aligned in any axis
             if (isempty(matching_coordinate))
-                wb_console_print(sprintf('Realign first. X travel then Y travel'), WB_STDOUT);
-                h.align([target_bearing(1) 0])
-                h.travel(x_diff);
-                h.align(h.target_bearing(target_coords));
-                h.travel(y_diff);
+                [~, t_axis, t_bearing] = find(target_bearing);
+
+                wb_console_print(sprintf('DEBUG: t_axis [%d %d] ', t_axis), WB_STDOUT);
+                wb_console_print(sprintf('DEBUG: t_bearing [%d %d] ', t_bearing), WB_STDOUT)
+
+                if (t_axis == 1)
+                    h.align([t_bearing 0]);
+                    h.travel(x_diff);
+
+                % travel only by y axis
+                elseif (t_axis == 2)
+                    h.align([0 t_bearing]);
+                    h.travel(y_diff);
+                
+                % robot is totally misaligned, align by y
+                elseif (isequal(t_axis, [1 2]))
+                    h.align([0 t_bearing(2)]);
+                    h.travel(y_diff);
+                    h.align(h.target_bearing(target_coords));
+                    h.travel(x_diff);
+                end
+                
             elseif (matching_coordinate == 1)
                 wb_console_print(sprintf('X travel first'), WB_STDOUT);
                 h.travel(x_diff);
                 h.align(h.target_bearing(target_coords));
                 h.travel(y_diff);
+
             elseif (matching_coordinate == 2)     
                 wb_console_print(sprintf('Y travel first'), WB_STDOUT);
                 h.travel(y_diff);
                 h.align(h.target_bearing(target_coords));
                 h.travel(x_diff)
-            elseif( isequal(matching_coordinate, [1 2]))
-                h.travel(max([x_diff y_diff]))
+
             end
 
             wb_console_print(sprintf('End move'), WB_STDOUT);
