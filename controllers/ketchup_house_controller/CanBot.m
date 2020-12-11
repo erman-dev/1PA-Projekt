@@ -6,19 +6,21 @@ classdef CanBot < handle
         compass
         infra_left 
         infra_right 
-        TIME_STEP = 64
+        TIME_STEP = 32
         bearing
         storage_positions
-        turn_slow_down_angle = 15  %deg
-        turn_angle_precision = 5 %deg
-        speed_default = 6   	   %rad/s
-        diff_threshold = 50        %ir sensor value
+        turn_slow_down_angle
+        turn_angle_precision = 0.5 %deg
+        speed_default = 8   	   %rad/s
+        diff_threshold = 30        %ir sensor value
         position = [7 4]           %7th row 4th column
     end
 
     methods
-        function h = CanBot(motor_left_handle, motor_right_handle, dst_front_handle, ...
-                            compass_handle, infra_left_handle, infra_right_handle, storage_positions)
+        function h = CanBot(motor_left_handle, motor_right_handle, ...
+                            dst_front_handle,  compass_handle, ...
+                            infra_left_handle, infra_right_handle, ...
+                            storage_positions)
             
             % Set positions in which the robot will store cans
             h.storage_positions = storage_positions;
@@ -42,6 +44,9 @@ classdef CanBot < handle
             wb_motor_set_position(h.motor_right, inf);
             wb_motor_set_velocity(h.motor_left, 0);
             wb_motor_set_velocity(h.motor_right, 0);
+
+            % Calculate variables
+            h.turn_slow_down_angle = h.speed_default * 1.5;
         end
 
         function travel(h, steps)
@@ -77,8 +82,8 @@ classdef CanBot < handle
                     off_line = true;
                 end
 
-                % Ignore if the robot detects a line in the first 10 measurements
-                if (on_line && off_line && nr_measurements < 10)
+                % Ignore if the robot detects a line in the first few measurements
+                if (on_line && off_line && nr_measurements < h.speed_default*2)
                     on_line = false;
                     off_line = false;
 
@@ -122,64 +127,49 @@ classdef CanBot < handle
                 return;
             end
 
-            % Calculate the angular difference between two angle
-            % in CW direction and in CCW direction
-            ccw_angle = round(r_angle, -1) - t_angle;
-            cw_angle = t_angle - round(r_angle, -1);
+            [cwa, ccwa] = h.get_angle_diff(r_angle, t_angle);
 
-            if cw_angle < 0 
-                cw_angle = cw_angle + 360;
-            end
-
-            if ccw_angle < 0 
-                ccw_angle = ccw_angle + 360;
-            end
-
-            if (ccw_angle < cw_angle)
+            if ( round(ccwa, -1) < round(cwa, -1) )
                 rotation_direction = 1;
             else
                 rotation_direction = -1;
             end
 
-            wb_console_print(sprintf('CW %f, CCW %f', cw_angle, ccw_angle), WB_STDOUT);
+            wb_console_print(sprintf('CW %f, CCW %f', cwa, ccwa), WB_STDOUT);
             wb_console_print(sprintf('Robot angle %d', r_angle), WB_STDOUT);
             wb_console_print(sprintf('Target angle %d', t_angle), WB_STDOUT);
 
             wb_motor_set_velocity(h.motor_left, h.speed_default*rotation_direction*-1);
             wb_motor_set_velocity(h.motor_right, h.speed_default*rotation_direction);
 
-            angle_prev = false;
-
             while wb_robot_step(h.TIME_STEP) ~= -1
                 r_angle = h.get_angle();
 
-                angle_diff = r_angle - t_angle;
+                [cwa, ccwa] = h.get_angle_diff(r_angle, t_angle);
 
-                if (~angle_prev) 
-                    angle_prev = angle_diff;
+                angle_remaining = min([cwa ccwa]);
+
+                if ( ccwa < cwa )
+                    rotation_direction = 1;
+                else
+                    rotation_direction = -1;
                 end
 
-                if (abs(r_angle - t_angle) < h.turn_slow_down_angle)
-                    wb_motor_set_velocity(h.motor_left, h.speed_default*rotation_direction*-1/8)
-                    wb_motor_set_velocity(h.motor_right, h.speed_default*rotation_direction/8)
+                if ( abs(angle_remaining) < h.turn_slow_down_angle )
+                    slow_coef = max([10 20/angle_remaining]);
+                    wb_motor_set_velocity(h.motor_left, h.speed_default*rotation_direction*-1/slow_coef);
+                    wb_motor_set_velocity(h.motor_right, h.speed_default*rotation_direction/slow_coef);
                 end
-
-                if (abs(r_angle - t_angle) < h.turn_angle_precision)
-                    wb_motor_set_velocity(h.motor_left, h.speed_default*rotation_direction*-1/20);
-                    wb_motor_set_velocity(h.motor_right, h.speed_default*rotation_direction/20);
-                end
-
-                wb_console_print(sprintf('Anle %f', r_angle), WB_STDOUT);
-                wb_console_print(sprintf('Diff %f Prev %f', angle_diff, angle_prev), WB_STDOUT);
-                wb_console_print(sprintf('Diff num %f', abs(diff([angle_diff angle_prev]))), WB_STDOUT);
-
-                if ( sign(angle_diff) ~= sign(angle_prev) || abs(diff([angle_diff angle_prev])) > 300 )
+                
+                if ( abs(angle_remaining) < h.turn_angle_precision )
                     wb_motor_set_velocity(h.motor_left, 0);
                     wb_motor_set_velocity(h.motor_right, 0);
                     break;
                 end
-
-                angle_prev = angle_diff;
+                
+                %   wb_console_print(sprintf('CW %f, CCW %f', cwa, ccwa), WB_STDOUT);
+                %wb_console_print(sprintf('Remainning %f Prev %f', angle_remaining, angle_prev), WB_STDOUT);
+                
             end
         end
 
@@ -196,6 +186,22 @@ classdef CanBot < handle
             h.align(storage_alignment)
             h.travel(-1);
             h.align([-1 0]);
+
+        end
+
+        function [cw_angle, ccw_angle] = get_angle_diff(h, r_angle, t_angle)
+            % Calculate the angular difference between two angle
+            % in CW direction and in CCW direction
+            ccw_angle = r_angle - t_angle;
+            cw_angle = t_angle - r_angle;
+            
+            if cw_angle < 0 
+                cw_angle = cw_angle + 360;
+            end
+
+            if ccw_angle < 0 
+                ccw_angle = ccw_angle + 360;
+            end
 
         end
 

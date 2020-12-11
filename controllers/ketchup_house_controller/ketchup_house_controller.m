@@ -4,8 +4,6 @@
 % Description:
 % Author: Roman Krček, Karel Hejl
 
-TIME_STEP = 64;
-
 %desktop;
 %keyboard;
 

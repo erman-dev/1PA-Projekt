@@ -3,10 +3,10 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 0.5060275276372255 0.8297745177086713 0.23539411852189324 4.9749566126300735
-  position -2.0231261007048245 1.9013706769640206 1.501261999613651
+  orientation 0.5890461138915515 0.7732379227079641 0.23479308038256488 5.026984948792327
+  position -1.9905647033443503 2.363432103765103 1.3679779942403623
   follow "robot"
-  followType "Mounted Shot"
+  followType "Pan and Tilt Shot"
 }
 TexturedBackground {
   texture "empty_office"
@@ -76,7 +76,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint Solid {
         translation -0.07 0.02 -0.0875
-        rotation 0 0 1 1.57079030610042
+        rotation 1.403776274825884e-23 -4.679254249419614e-24 1 1.57079030610042
         children [
           DEF wheel Shape {
             appearance PBRAppearance {
@@ -107,7 +107,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint DEF wheel_right Solid {
         translation 0.07 0.02 -0.0875
-        rotation 5.288019747021084e-09 -2.068733082967421e-10 1 1.5707996810992422
+        rotation 5.288019747021089e-09 -2.0687330829673742e-10 1 1.5707996810992424
         children [
           USE wheel
         ]
@@ -212,7 +212,7 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation -0.01 0.0375 -0.45
+  translation 0.23 0.0375 -0.67
   children [
     DEF can Shape {
       appearance Appearance {
@@ -236,6 +236,105 @@ DEF can Solid {
     }
   ]
   name "solid(5)"
+  boundingObject USE can
+  physics DEF physics_can Physics {
+    density -1
+    mass 0.05
+    damping Damping {
+    }
+  }
+}
+DEF can Solid {
+  translation 0.44 0.0375 -0.67
+  children [
+    DEF can Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.75
+          diffuseColor 1 1 1
+          shininess 1
+        }
+        texture ImageTexture {
+          url [
+            "resources/can.png"
+          ]
+          repeatS FALSE
+          repeatT FALSE
+        }
+      }
+      geometry Cylinder {
+        height 0.075
+        radius 0.0275
+      }
+    }
+  ]
+  name "solid(2)"
+  boundingObject USE can
+  physics DEF physics_can Physics {
+    density -1
+    mass 0.05
+    damping Damping {
+    }
+  }
+}
+DEF can Solid {
+  translation 0.57 0.0375 -0.67
+  children [
+    DEF can Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.75
+          diffuseColor 1 1 1
+          shininess 1
+        }
+        texture ImageTexture {
+          url [
+            "resources/can.png"
+          ]
+          repeatS FALSE
+          repeatT FALSE
+        }
+      }
+      geometry Cylinder {
+        height 0.075
+        radius 0.0275
+      }
+    }
+  ]
+  name "solid(4)"
+  boundingObject USE can
+  physics DEF physics_can Physics {
+    density -1
+    mass 0.05
+    damping Damping {
+    }
+  }
+}
+DEF can Solid {
+  translation 0 0.0375 -0.45
+  children [
+    DEF can Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.75
+          diffuseColor 1 1 1
+          shininess 1
+        }
+        texture ImageTexture {
+          url [
+            "resources/can.png"
+          ]
+          repeatS FALSE
+          repeatT FALSE
+        }
+      }
+      geometry Cylinder {
+        height 0.075
+        radius 0.0275
+      }
+    }
+  ]
+  name "solid(1)"
   boundingObject USE can
   physics DEF physics_can Physics {
     density -1
