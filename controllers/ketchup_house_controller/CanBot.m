@@ -1,29 +1,46 @@
 classdef CanBot < handle
     properties (Access = private)
-        motor_left
-        motor_right
-        dst_front
-        compass
-        infra_left 
-        infra_right 
-        TIME_STEP = 32
-        bearing
-        storage_positions
-        turn_slow_down_angle
-        turn_angle_precision = 0.5 %deg
-        speed_default = 8   	   %rad/s
-        diff_threshold = 30        %ir sensor value
-        position = [7 4]           %7th row 4th column
+        motor_left                 % text handle of device
+        motor_right                % text handle of device
+        dst_front                  % text handle of device
+        compass                    % text handle of device
+        infra_left                 % text handle of device
+        infra_right                % text handle of device
+        time_step                  % time step of the simulation
+        bearing                    % direction of the robot
+        storage_positions          % positions in which to store cans
+        turn_slow_down_angle       % angle in which robot slows down
+        turn_angle_precision = 0.5 % precision of robot in turns deg
+        speed_default = 4     	   % speed of robot in rad/s
+        diff_threshold = 50        % line detection threshold value
+        position                   % current position of robot
     end
 
     methods
         function h = CanBot(motor_left_handle, motor_right_handle, ...
                             dst_front_handle,  compass_handle, ...
                             infra_left_handle, infra_right_handle, ...
-                            storage_positions)
+                            position, storage_positions, time_step)
+            %% Initiator takes in all device text handles and some
+            %  additional configuration.
+            %% Gets all devices and stores those hadles in the class,
+            %  enables sensors and compass
+            arguments
+                motor_left_handle char
+                motor_right_handle char
+                dst_front_handle char
+                compass_handle char
+                infra_left_handle char
+                infra_right_handle char
+                position (1,2) double
+                storage_positions (:,4) double
+                time_step double = 64
+            end
             
             % Set positions in which the robot will store cans
             h.storage_positions = storage_positions;
+            h.time_step = time_step;
+            h.position = position;
 
             % Get all robot devices 
             h.motor_left = wb_robot_get_device(motor_left_handle);
@@ -34,10 +51,10 @@ classdef CanBot < handle
             h.infra_right =  wb_robot_get_device(infra_right_handle);
 
             % Enable all sensors
-            wb_distance_sensor_enable(h.dst_front, h.TIME_STEP);
-            wb_distance_sensor_enable(h.infra_left, h.TIME_STEP);
-            wb_distance_sensor_enable(h.infra_right, h.TIME_STEP);
-            wb_compass_enable(h.compass, h.TIME_STEP);
+            wb_distance_sensor_enable(h.dst_front, h.time_step);
+            wb_distance_sensor_enable(h.infra_left, h.time_step);
+            wb_distance_sensor_enable(h.infra_right, h.time_step);
+            wb_compass_enable(h.compass, h.time_step);
 
             % Set motor positions
             wb_motor_set_position(h.motor_left, inf );
@@ -50,8 +67,13 @@ classdef CanBot < handle
         end
 
         function travel(h, steps)
-            % Robot travel specified amount of lines (steps) forward
-            % The default state is that the robot is standing on a line
+            %% Robot travels specified amount of lines (steps) forwards
+            %  or backwards
+            arguments
+                h
+                steps {mustBeInteger}
+            end
+
             steps_to_travel = steps;
             direction = sign(steps);
             robot_bearing = h.get_bearing();
@@ -66,7 +88,7 @@ classdef CanBot < handle
 
             nr_measurements = 0;
 
-            while wb_robot_step(h.TIME_STEP) ~= -1
+            while wb_robot_step(h.time_step) ~= -1
                 ir_left = wb_distance_sensor_get_value(h.infra_left);
                 ir_right = wb_distance_sensor_get_value(h.infra_right);
                 ir_rep = mean([ir_left ir_right]);
@@ -108,6 +130,12 @@ classdef CanBot < handle
         end
 
         function align(h, bearing)
+            %% Aligns the robot alow with one axis
+            arguments
+                h
+                bearing (1,2) {mustBeInteger}
+            end
+
             if ( isequal(bearing, [-1 0]))
                 t_angle = 0;
             elseif ( isequal(bearing, [0 1]))
@@ -142,7 +170,7 @@ classdef CanBot < handle
             wb_motor_set_velocity(h.motor_left, h.speed_default*rotation_direction*-1);
             wb_motor_set_velocity(h.motor_right, h.speed_default*rotation_direction);
 
-            while wb_robot_step(h.TIME_STEP) ~= -1
+            while wb_robot_step(h.time_step) ~= -1
                 r_angle = h.get_angle();
 
                 [cwa, ccwa] = h.get_angle_diff(r_angle, t_angle);
@@ -167,13 +195,14 @@ classdef CanBot < handle
                     break;
                 end
                 
-                %   wb_console_print(sprintf('CW %f, CCW %f', cwa, ccwa), WB_STDOUT);
-                %wb_console_print(sprintf('Remainning %f Prev %f', angle_remaining, angle_prev), WB_STDOUT);
-                
+                % wb_console_print(sprintf('CW %f, CCW %f', cwa, ccwa), WB_STDOUT);
+                % wb_console_print(sprintf('Remainning %f Prev %f', angle_remaining, angle_prev), WB_STDOUT);
             end
         end
 
         function store_cans(h)
+            %% Navigates the robot to a free storage position and
+            %  backs one line to dump the cans
             storage = h.storage_positions(1,:);
             h.storage_positions(1,:) = [];
 
@@ -189,9 +218,15 @@ classdef CanBot < handle
 
         end
 
-        function [cw_angle, ccw_angle] = get_angle_diff(h, r_angle, t_angle)
-            % Calculate the angular difference between two angle
-            % in CW direction and in CCW direction
+        function [cw_angle, ccw_angle] = get_angle_diff(~, r_angle, t_angle)
+            %% Calculates the angular difference between two angles
+            %  in CW direction and in CCW direction
+            arguments
+                ~
+                r_angle {mustBeReal}
+                t_angle {mustBeReal}
+            end
+
             ccw_angle = r_angle - t_angle;
             cw_angle = t_angle - r_angle;
             
@@ -206,7 +241,12 @@ classdef CanBot < handle
         end
 
         function deg_bearing = get_angle(h)
-            while wb_robot_step(h.TIME_STEP) ~= -1
+            %% Gets the angle of the robot relative to the world
+            %  0   -> -Z direction in WB world
+            %  90  -> +X direction in WB world
+            %  180 -> +Z direction in WB world
+            %  270 -> -X direction in WB world
+            while wb_robot_step(h.time_step) ~= -1
                 comapss_vals = wb_compass_get_values(h.compass);
                 if (~isnan(comapss_vals))
                     break;
@@ -221,9 +261,8 @@ classdef CanBot < handle
         end
 
         function bearing = get_bearing(h)
-            % Returns bearing of the robot in degrees
-            % 0 degrees is when facing the enemy robot
-            % and tha value increse clockwise
+            %% Gets the axis and direction the robot is facing
+
             deg_bearing = h.get_angle();
 
             % wb_console_print(sprintf('Deg bearing %d', deg_bearing), WB_STDOUT);
@@ -242,7 +281,7 @@ classdef CanBot < handle
         end
 
         function bearing = target_bearing(h, target)
-            % Calculates bearing between two points
+            %% Calculates bearing between two points
             x_diff = target(1) - h.position(1); % 1 - 7 = -6
             y_diff = target(2) - h.position(2); % 1 - 4 = -3
 
@@ -250,6 +289,11 @@ classdef CanBot < handle
         end
 
         function go_coordinates(h, target_coords)
+            %% Navigates the robot to specified coordinates
+            arguments
+                h
+                target_coords (1,2) {mustBeInteger, mustBePositive}
+            end
 
             target_bearing = h.target_bearing(target_coords);
             robot_bearing = h.get_bearing();
@@ -304,7 +348,6 @@ classdef CanBot < handle
             end
 
             wb_console_print(sprintf('End move'), WB_STDOUT);
-
         end
 
         function scan_cans(h)
@@ -312,12 +355,12 @@ classdef CanBot < handle
             nearest_cans=[];
             nearest = [];
             localized_cans = zeros(7);
-            while wb_robot_step(h.TIME_STEP) ~= -1
+            while wb_robot_step(h.time_step) ~= -1
                 angle = wb_compass_get_values(h.compass);
                 wb_console_print(sprintf('Compass value is %f\n', angle(3)), WB_STDOUT);
                 if angle(3) < 2
-                    while wb_robot_step(h.TIME_STEP) ~= -1
-                    wb_distance_sensor_enable(h.dst_front, h.TIME_STEP)
+                    while wb_robot_step(h.time_step) ~= -1
+                    wb_distance_sensor_enable(h.dst_front, h.time_step)
                     wb_motor_set_velocity(h.motor_left, -1);
                     wb_motor_set_velocity(h.motor_right, 1);
                     
