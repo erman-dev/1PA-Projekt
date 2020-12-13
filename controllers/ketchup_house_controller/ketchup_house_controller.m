@@ -30,7 +30,11 @@ can_bot = CanBot('motor_left', 'motor_right', 'dst_front', ...
 
 %logging("INFO", 'I am travelling %d lines forward', 64);
 
-can_bot.go_coordinates([1 1]);
-can_bot.store_cans();
-can_bot.go_coordinates([1 7]);
-can_bot.store_cans();
+plechovky = can_bot.scan_cans()
+
+for i = size(plechovky,1)
+  target_coords = plechovky(i, :)
+  can_bot.go_coordinates(target_coords)
+end
+
+can_bot.store_cans()

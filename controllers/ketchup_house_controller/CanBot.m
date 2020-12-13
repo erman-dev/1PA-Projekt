@@ -51,7 +51,7 @@ classdef CanBot < handle
             h.infra_right =  wb_robot_get_device(infra_right_handle);
 
             % Enable all sensors
-            wb_distance_sensor_enable(h.dst_front, h.time_step);
+            %wb_distance_sensor_enable(h.dst_front, h.time_step);
             wb_distance_sensor_enable(h.infra_left, h.time_step);
             wb_distance_sensor_enable(h.infra_right, h.time_step);
             wb_compass_enable(h.compass, h.time_step);
@@ -350,7 +350,8 @@ classdef CanBot < handle
             wb_console_print(sprintf('End move'), WB_STDOUT);
         end
 
-        function scan_cans(h)
+        function localized_cans_coords = scan_cans(h)
+            % Gets coordinates of nearest cans
             distance_prev = 10000;
             nearest_cans=[];
             nearest = [];
@@ -380,22 +381,28 @@ classdef CanBot < handle
                     
                     % wb_console_print(sprintf('nearest_cans is %f\n', nearest_cans), WB_STDOUT);
                     if angle(3) > 0.88
-                        wb_distance_sensor_disable(dst_front)
-                        wb_motor_set_velocity(motor_left, 0);
-                        wb_motor_set_velocity(motor_right, 0);
+                        wb_distance_sensor_disable(h.dst_front)
+                        wb_motor_set_velocity(h.motor_left, 0);
+                        wb_motor_set_velocity(h.motor_right, 0);
                         
                         can_distances = [nearest_cans(:,1)];
                         sorted_can_distances = sort(can_distances);
                         nearest = [];
                 
-                            for i = 1:3
+                        if sorted_can_distances < 3
+                            n = length(sorted_can_distances)
+                        else 
+                            n = 3
+                        end   
+
+                            for i = 1:n
                             can_position_in_matrix =  find(nearest_cans == sorted_can_distances(i));
                             nearest = [nearest; nearest_cans(can_position_in_matrix, :)];
                             end
                             cans_to_deliver = nearest (1:3,:)
                             
                 
-                        for i = 1:3
+                        for i = 1:n
                             if cans_to_deliver(i, 2) < (0.1) && cans_to_deliver(i, 2) > (-0.2)
                                 if cans_to_deliver(i, 1) == 300
                                 localized_cans(5, 4) = 1;
@@ -414,7 +421,7 @@ classdef CanBot < handle
                                 elseif cans_to_deliver(i, 1) == 900
                                     localized_cans(3, 2) = 1;
                                 elseif cans_to_deliver(i, 1) == 700 
-                                if T(i, 2) <= (0.6)
+                                if cans_to_deliver(i, 2) <= (0.6)
                                     localized_cans(4, 2) = 1;
                                 elseif cans_to_deliver(i, 2) > (0.6)
                                     localized_cans(5, 1) = 1;  
@@ -450,6 +457,10 @@ classdef CanBot < handle
                                 end 
                             end
                         end
+
+                        [a,b] = find(localized_cans==1)
+                        localized_cans_coords = [a, b]
+                        return
                     end
                     end
                 end 
