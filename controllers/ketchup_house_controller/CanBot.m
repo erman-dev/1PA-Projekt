@@ -20,7 +20,8 @@ classdef CanBot < handle
         function h = CanBot(motor_left_handle, motor_right_handle, ...
                             dst_front_handle,  compass_handle, ...
                             infra_left_handle, infra_right_handle, ...
-                            position, storage_positions, time_step)
+                            position, storage_positions, scan_angle, ...
+                            time_step)
             %% Initiator takes in all device text handles and some
             %  additional configuration.
             %% Gets all devices and stores those hadles in the class,
@@ -34,13 +35,15 @@ classdef CanBot < handle
                 infra_right_handle char
                 position (1,2) double
                 storage_positions (:,4) double
+                scan_angle (1,2) double
                 time_step double = 64
             end
             
             % Set positions in which the robot will store cans
-            h.storage_positions = storage_positions;
-            h.time_step = time_step;
             h.position = position;
+            h.storage_positions = storage_positions;
+            h.scan_angle = scan_angle;
+            h.time_step = time_step;
 
             % Get all robot devices 
             h.motor_left = wb_robot_get_device(motor_left_handle);
@@ -51,7 +54,6 @@ classdef CanBot < handle
             h.infra_right =  wb_robot_get_device(infra_right_handle);
 
             % Enable all sensors
-            %wb_distance_sensor_enable(h.dst_front, h.time_step);
             wb_distance_sensor_enable(h.infra_left, h.time_step);
             wb_distance_sensor_enable(h.infra_right, h.time_step);
             wb_compass_enable(h.compass, h.time_step);
@@ -246,14 +248,15 @@ classdef CanBot < handle
             %  90  -> +X direction in WB world
             %  180 -> +Z direction in WB world
             %  270 -> -X direction in WB world
+            
             while wb_robot_step(h.time_step) ~= -1
-                comapss_vals = wb_compass_get_values(h.compass);
-                if (~isnan(comapss_vals))
+                compass_vals = wb_compass_get_values(h.compass);
+                if (~isnan(compass_vals))
                     break;
                 end
             end
 
-            rad = atan2(comapss_vals(1), comapss_vals(3));
+            rad = atan2(compass_vals(1), compass_vals(3));
             deg_bearing = (rad - 1.5708) / pi * 180.0;
             if (deg_bearing < 0.0)
                 deg_bearing = deg_bearing + 360.0;                
@@ -313,8 +316,8 @@ classdef CanBot < handle
             if (isempty(matching_coordinate))
                 [~, t_axis, t_bearing] = find(target_bearing);
 
-                wb_console_print(sprintf('DEBUG: t_axis [%d %d] ', t_axis), WB_STDOUT);
-                wb_console_print(sprintf('DEBUG: t_bearing [%d %d] ', t_bearing), WB_STDOUT)
+                %wb_console_print(sprintf('DEBUG: t_axis [%d %d] ', t_axis), WB_STDOUT);
+                %wb_console_print(sprintf('DEBUG: t_bearing [%d %d] ', t_bearing), WB_STDOUT)
 
                 if (t_axis == 1)
                     h.align([t_bearing 0]);
@@ -407,7 +410,7 @@ classdef CanBot < handle
                         nearest_cans
                         
                         can_distances = [nearest_cans(:,1)];
-                        sorted_can_distances = sort(can_distances)
+                        sorted_can_distances = sort(can_distances);
                         nearest = [];
                 
                         if size(sorted_can_distances, 1) < 3
@@ -418,12 +421,14 @@ classdef CanBot < handle
 
                         wb_console_print(sprintf('Choosing %d. \n', n), WB_STDOUT); 
 
-                        for i = 1:n
-                            can_position_in_matrix =  find(nearest_cans == sorted_can_distances(i));
-                            nearest = [nearest; nearest_cans(can_position_in_matrix, :)];
-                        end
+                        % for i = 1:n
+                        %     can_position_in_matrix = find(nearest_cans == sorted_can_distances(i));
+                        %     nearest = [nearest; nearest_cans(can_position_in_matrix, :)];
+                        % end
                         
-                        cans_to_deliver = nearest(1:n,:)
+                        [~, idx] = sort(nearest_cans(:,1));
+                        cans_to_deliver = nearest_cans(idx,:);
+                        cans_to_deliver = cans_to_deliver(1:n, :)
                 
                         for i = 1:n
                             if cans_to_deliver(i, 2) < (0.1) && cans_to_deliver(i, 2) > (-0.2)
