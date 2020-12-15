@@ -14,6 +14,7 @@ classdef CanBot < handle
         speed_default = 4     	   % speed of robot in rad/s
         diff_threshold = 50        % line detection threshold value
         position                   % current position of robot
+        scan_angle                 % angle in whoch the robot will look for cans
     end
 
     methods
