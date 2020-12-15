@@ -30,11 +30,20 @@ can_bot = CanBot('motor_left', 'motor_right', 'dst_front', ...
 
 %logging("INFO", 'I am travelling %d lines forward', 64);
 
-plechovky = can_bot.scan_cans()
+while true
 
-for i = size(plechovky,1)
-  target_coords = plechovky(i, :)
-  can_bot.go_coordinates(target_coords)
+  cans = can_bot.scan_cans();
+
+  if isempty(cans)
+    wb_console_print(sprintf('No more cans to pick up'), WB_STDOUT);
+    can_bot.align([-1 0]);
+    break;
+  end
+
+  for i = size(cans,1)
+    target_coords = cans(i, :);
+    can_bot.go_coordinates(target_coords);
+  end
+
+  can_bot.store_cans();
 end
-
-can_bot.store_cans()
