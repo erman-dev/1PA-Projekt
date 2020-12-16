@@ -4,7 +4,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation 1 0 0 4.71238898038469
-  position -0.00024637648857826446 3.0004068731633535 4.4552936977760675e-05
+  position -0.00024637648857826446 4.731339395538949 4.455293697744272e-05
   follow "robot"
   followType "None"
 }
@@ -39,7 +39,7 @@ DEF Ketchup_robot Robot {
           appearance Appearance {
             material Material {
               ambientIntensity 1
-              diffuseColor 0.752941 0.752941 0.752941
+              diffuseColor 0 0.5 0.5
               shininess 0.3125
               specularColor 0.225882 0.225882 0.225882
             }
@@ -188,7 +188,6 @@ DEF Ketchup_robot Robot {
     density 2000
   }
   controller "ketchup_house_controller"
-  supervisor TRUE
 }
 DEF Ketchup_robot Robot {
   translation -5.40194e-06 0.0075 -0.8
@@ -358,7 +357,7 @@ DEF Ketchup_robot Robot {
   supervisor TRUE
 }
 DEF can Solid {
-  translation -0.22 0.0375 -0.23
+  translation -0.22 0.0375 0
   children [
     DEF can Shape {
       appearance Appearance {
@@ -555,7 +554,7 @@ DEF can Solid {
   }
 }
 DEF can1 Solid {
-  translation 0.67 0.0375 -0.23
+  translation 0.67 0.0375 0
   children [
     DEF can Shape {
       appearance Appearance {
