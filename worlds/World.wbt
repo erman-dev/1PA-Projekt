@@ -3,8 +3,8 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 0.17037360866071838 0.9702609948845491 0.17194893217920643 4.673005185661957
-  position -2.63751015946263 1.077849248410197 0.05582717809519949
+  orientation 1 0 0 4.71238898038469
+  position -0.00024637648857826446 3.0004068731633535 4.4552936977760675e-05
   follow "robot"
   followType "None"
 }
@@ -120,7 +120,7 @@ DEF Ketchup_robot Robot {
     DistanceSensor {
       translation -0.047 0.05 -0.18
       rotation 0 1 0 1.5707996938995747
-      name "dst_front"
+      name "dst_front_can"
       lookupTable [
         0 0 0
         1 1000 0
@@ -131,7 +131,7 @@ DEF Ketchup_robot Robot {
     DistanceSensor {
       translation -0.047 0.1 -0.18
       rotation 0 1 0 1.5707996938995747
-      name "dst_bot_front"
+      name "dst_front_bot"
       lookupTable [
         0 0 0
         1 1000 0
@@ -143,7 +143,7 @@ DEF Ketchup_robot Robot {
       translation -0.067 0.1 -0.18
       rotation 0 1 0 1.8326
       scale 1.06192 1.06192 1.06192
-      name "dst_bot_left"
+      name "dst_left_bot"
       lookupTable [
         0 0 0
         1 1000 0
@@ -155,7 +155,7 @@ DEF Ketchup_robot Robot {
       translation 0.063 0.1 -0.18
       rotation 0 -1 0 -1.3090053071795866
       scale 1.06192 1.06192 1.06192
-      name "dst_bot_right"
+      name "dst_right_bot"
       lookupTable [
         0 0 0
         1 1000 0
@@ -286,7 +286,7 @@ DEF Ketchup_robot Robot {
     DistanceSensor {
       translation -0.047 0.05 -0.18
       rotation 0 1 0 1.5707996938995747
-      name "dst_front"
+      name "dst_front_can"
       lookupTable [
         0 0 0
         1 1000 0
@@ -297,7 +297,7 @@ DEF Ketchup_robot Robot {
     DistanceSensor {
       translation -0.047 0.1 -0.18
       rotation 0 1 0 1.5707996938995747
-      name "dst_bot_front"
+      name "dst_front_bot"
       lookupTable [
         0 0 0
         1 1000 0
@@ -309,7 +309,7 @@ DEF Ketchup_robot Robot {
       translation -0.067 0.1 -0.18
       rotation 0 1 0 1.8326
       scale 1.06192 1.06192 1.06192
-      name "dst_bot_left"
+      name "dst_left_bot"
       lookupTable [
         0 0 0
         1 1000 0
@@ -321,7 +321,7 @@ DEF Ketchup_robot Robot {
       translation 0.063 0.1 -0.18
       rotation 0 -1 0 -1.3090053071795866
       scale 1.06192 1.06192 1.06192
-      name "dst_bot_right"
+      name "dst_right_bot"
       lookupTable [
         0 0 0
         1 1000 0
@@ -358,7 +358,7 @@ DEF Ketchup_robot Robot {
   supervisor TRUE
 }
 DEF can Solid {
-  translation -0.22 0.0375 0
+  translation -0.22 0.0375 -0.23
   children [
     DEF can Shape {
       appearance Appearance {
@@ -456,7 +456,7 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0.01 0.0375 -0.23
+  translation 0 0.0375 -0.23
   children [
     DEF can Shape {
       appearance Appearance {
@@ -555,7 +555,7 @@ DEF can Solid {
   }
 }
 DEF can1 Solid {
-  translation 0.67 0.0375 0
+  translation 0.67 0.0375 -0.23
   children [
     DEF can Shape {
       appearance Appearance {
