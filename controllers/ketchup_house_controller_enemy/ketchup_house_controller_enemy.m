@@ -25,7 +25,7 @@ storage_positions = [7 1, 0 -1;
                      7 6, 0  1];
 robot_position = [7 4];
 
-scan_angle = [65 300]
+scan_angle = [120 245]
 
 can_bot = CanBot('motor_left', 'motor_right', 'dst_front', ...
                  'compass', 'infra_left', 'infra_right', ...
