@@ -14,9 +14,13 @@ classdef CanBot < handle
         speed_default = 4     	   % speed of robot in rad/s
         diff_threshold = 50        % line detection threshold value
         position                   % current position of robot
+        
+    end
+    
+    properties (Access = public)
         scan_angle                 % angle in whoch the robot will look for cans
     end
-
+    
     methods
         function h = CanBot(motor_left_handle, motor_right_handle, ...
                             dst_front_handle,  compass_handle, ...
@@ -354,20 +358,19 @@ classdef CanBot < handle
             wb_console_print(sprintf('End move'), WB_STDOUT);
         end
 
-        function localized_cans_coords = scan_cans(h)
+        function cans_pos = scan_cans(h)
             % Gets coordinates of nearest cans
             distance_prev = 10000;
             nearest_cans=[];
-            nearest = [];
-            localized_cans = zeros(7);
-            localized_cans_coords = [];
+            cans_pos = [];
+             wb_console_print(sprintf('Scan angle is %f\n', h.scan_angle), WB_STDOUT)
 
-            % Turn robot to 50°
+            % Turn robot to scan angle
             wb_motor_set_velocity(h.motor_left, h.speed_default);
             wb_motor_set_velocity(h.motor_right, -h.speed_default);
             while wb_robot_step(h.time_step) ~= -1
                 r_angle = h.get_angle();
-                if r_angle > 50
+                if abs(h.scan_angle(1) - h.get_angle()) < 5
                     wb_motor_set_velocity(h.motor_left, 0);
                     wb_motor_set_velocity(h.motor_right, 0);
                     break;
@@ -376,8 +379,8 @@ classdef CanBot < handle
 
             while wb_robot_step(h.time_step) ~= -1
                 angle = wb_compass_get_values(h.compass);
-                wb_console_print(sprintf('Compass value is %f\n', angle(3)), WB_STDOUT);
-                if angle(3) < 2
+                wb_console_print(sprintf('Angle is %f\n', h.get_angle()), WB_STDOUT)
+                while true
                     while wb_robot_step(h.time_step) ~= -1
                     wb_distance_sensor_enable(h.dst_front, h.time_step)
                     wb_motor_set_velocity(h.motor_left, -1);
@@ -391,105 +394,66 @@ classdef CanBot < handle
                     
                     if abs(diff([distance distance_prev])) > 50 && distance ~= 1000
                         %wb_console_print(sprintf('diff is %f\n', diff([distance distance_prev])), WB_STDOUT);
-                        wb_console_print(sprintf('Can detected %f angle %f', distance, angle(3)), WB_STDOUT); 
-                        nearest_cans = [nearest_cans; distance angle(3)];
+                        wb_console_print(sprintf('Can detected %f angle %f', distance, h.get_angle()), WB_STDOUT); 
+                        nearest_cans = [nearest_cans; distance, h.get_angle()];
                     end
                     
                     distance_prev = distance;
                     
-                    % wb_console_print(sprintf('nearest_cans is %f\n', nearest_cans), WB_STDOUT);
-                    if angle(3) > 0.88
-                        wb_distance_sensor_disable(h.dst_front)
+                    %wb_console_print(sprintf('nearest_cans is %f\n', nearest_cans), WB_STDOUT);
+                   
+                    if abs(h.scan_angle(2) - h.get_angle()) < 5
+                        wb_distance_sensor_disable(h.dst_front);
                         wb_motor_set_velocity(h.motor_left, 0);
                         wb_motor_set_velocity(h.motor_right, 0);
 
                         % No cans detected
-                        if ( isempty(nearest_cans) )
+                        if isempty(nearest_cans)
+                            nearest_cans = []
                             return;
                         end
 
-                        nearest_cans
-                        
-                        can_distances = [nearest_cans(:,1)];
-                        sorted_can_distances = sort(can_distances);
-                        nearest = [];
-                
-                        if size(sorted_can_distances, 1) < 3
-                            n = size(sorted_can_distances, 1);
+
+                        % for i = 1:n
+                        %     can_position_in_matrix = find(nearest_cans == sorted_can_distances(i));
+                        %     nearest = [nearest; nearest_cans(can_position_in_matrix, :)];
+                        % end
+                        if size(nearest_cans, 1) < 3
+                            n = size(nearest_cans, 1);
                         else
                             n = 3;
                         end   
 
                         wb_console_print(sprintf('Choosing %d. \n', n), WB_STDOUT); 
 
-                        % for i = 1:n
-                        %     can_position_in_matrix = find(nearest_cans == sorted_can_distances(i));
-                        %     nearest = [nearest; nearest_cans(can_position_in_matrix, :)];
-                        % end
-                        
                         [~, idx] = sort(nearest_cans(:,1));
                         cans_to_deliver = nearest_cans(idx,:);
                         cans_to_deliver = cans_to_deliver(1:n, :)
-                
-                        for i = 1:n
-                            if cans_to_deliver(i, 2) < (0.1) && cans_to_deliver(i, 2) > (-0.2)
-                                if cans_to_deliver(i, 1) == 300
-                                localized_cans(5, 4) = 1;
-                                elseif cans_to_deliver(i, 1) == 600
-                                localized_cans(4, 4) = 1; 
-                                elseif cans_to_deliver(i, 1) == 800
-                                localized_cans(3, 4) = 1;
-                                end
-                            elseif cans_to_deliver(i, 2) >= (0.1)
-                                if cans_to_deliver(i, 1) == 400
-                                    localized_cans(5, 3) = 1;
-                                elseif cans_to_deliver(i, 1) == 500
-                                    localized_cans(5, 2) = 1; 
-                                elseif cans_to_deliver(i, 1) == 600
-                                    localized_cans(4, 3) = 1;
-                                elseif cans_to_deliver(i, 1) == 900
-                                    localized_cans(3, 2) = 1;
-                                elseif cans_to_deliver(i, 1) == 700 
-                                if cans_to_deliver(i, 2) <= (0.6)
-                                    localized_cans(4, 2) = 1;
-                                elseif cans_to_deliver(i, 2) > (0.6)
-                                    localized_cans(5, 1) = 1;  
-                                end
-                            elseif cans_to_deliver(i, 1) == 800
-                                if cans_to_deliver(i, 2) <= (0.4)
-                                localized_cans(3, 3) = 1;  
-                            elseif cans_to_deliver(i, 2) > (0.4)
-                                localized_cans(4, 1) = 1;  
-                                end
-                            end
-                        elseif cans_to_deliver(i, 2) <= (-0.2)
-                                if cans_to_deliver(i, 1) == 400
-                                localized_cans(5, 5) = 1;
-                                elseif cans_to_deliver(i, 1) == 500
-                                localized_cans(5, 6) = 1; 
-                                elseif cans_to_deliver(i, 1) == 600
-                                localized_cans(4, 5) = 1;
-                                elseif cans_to_deliver(i, 1) == 900
-                                localized_cans(3, 6) = 1;
-                                elseif cans_to_deliver(i, 1) == 700
-                                if cans_to_deliver(i, 2) >= (-0.7)
-                                    localized_cans(4, 6) = 1;
-                                elseif cans_to_deliver(i, 2) < (-0.7)
-                                    localized_cans(5, 7) = 1;
-                                end
-                                elseif cans_to_deliver(i, 1) == 800
-                                if cans_to_deliver(i, 2) >= (-0.5)
-                                    localized_cans(3, 5) = 1;  
-                                elseif cans_to_deliver(i, 2) < (-0.5)
-                                    localized_cans(4, 7) = 1;
-                                end
-                                end 
-                            end
+                        
+                        wb_console_print(sprintf('Choosing %d. \n', cans_to_deliver), WB_STDOUT); 
+
+                        i = 1;
+                        square = 200;       % dimension of one sqaure in mm
+                        robot_pos = [7 4];  % position of the robot on the playing field
+                        bearing = [-1 0];   % bearing of the robot
+                        cans_pos = [];      % empty array for the final can coordinates
+                        
+                        while i ~= n + 1
+                            can = cans_to_deliver(i,:);
+                            y_diff = sind(can(2))*can(1) - 30;
+                            y_sqaure_diff = round(y_diff/square);
+                            x_diff = cosd(can(2))*can(1);
+                            x_sqaure_diff = round(x_diff/square);
+                            
+                            can_rel_pos = [x_sqaure_diff*sign(bearing(1)), y_sqaure_diff];
+                            can_abs_pos = robot_pos + can_rel_pos;
+                            cans_pos = cat(1, cans_pos, can_abs_pos);
+                            i = i + 1;
+                            
                         end
 
-                        [a,b] = find(localized_cans==1);
-                        localized_cans_coords = [a, b];
-
+                    
+                        wb_console_print(sprintf('Can positions', cans_pos), WB_STDOUT);
                         wb_console_print(sprintf('Before align'), WB_STDOUT);
                         h.align([-1 0]);
                         wb_console_print(sprintf('After align'), WB_STDOUT);

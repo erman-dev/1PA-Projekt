@@ -3,8 +3,8 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 1 0 0 4.71238898038469
-  position 3.650871477103809e-05 4.707302680735226 5.3522776906566085e-05
+  orientation 0.5316580313964928 0.7832318838401602 0.3223159223305606 4.965775026192225
+  position -2.323415935967503 3.510647869459542 2.422577541011902
   follow "robot"
   followType "None"
 }
@@ -126,7 +126,7 @@ DEF Ketchup_robot Robot {
         1 1000 0
       ]
       type "laser"
-      resolution 100
+      resolution 1
     }
     DistanceSensor {
       translation -0.047 0.1 -0.18
@@ -191,7 +191,7 @@ DEF Ketchup_robot Robot {
   supervisor TRUE
 }
 DEF can Solid {
-  translation -0.22 0.0375 0.21
+  translation -0.22 0.0375 0
   children [
     DEF can Shape {
       appearance Appearance {
@@ -223,7 +223,7 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0.23 0.0375 0.23
+  translation 0.23 0.0375 0
   children [
     DEF can Shape {
       appearance Appearance {
@@ -256,7 +256,7 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0.45 0.0375 0.22
+  translation 0.45 0.0375 -0.23
   children [
     DEF can Shape {
       appearance Appearance {
@@ -289,7 +289,7 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0.44 0.0375 -0.23
+  translation 0.01 0.0375 -0.23
   children [
     DEF can Shape {
       appearance Appearance {
@@ -388,7 +388,7 @@ DEF can Solid {
   }
 }
 DEF can1 Solid {
-  translation 0.84 0.0375 -0.06
+  translation 0.67 0.0375 0
   children [
     DEF can Shape {
       appearance Appearance {
