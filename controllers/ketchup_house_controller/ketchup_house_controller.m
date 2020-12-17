@@ -6,10 +6,10 @@
 
 addpath('../')
 
-storage_positions = [7 1, 0 -1;
-                     7 2, 0 -1;
-                     7 7, 0  1;
-					 7 6, 0  1];
+storage_positions = [7 1;
+                     7 2;
+                     7 7;
+					 7 6];
 					 
 robot_position = [7 4];
 

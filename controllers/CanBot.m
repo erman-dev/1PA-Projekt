@@ -46,7 +46,7 @@ classdef CanBot < handle
                 infra_left_handle char
                 infra_right_handle char
                 position (1, 2) double
-                storage_positions (:, 4) double
+                storage_positions (:, 2) double
                 scan_angle (1, 2) double
                 time_step double = 64
             end
@@ -237,11 +237,14 @@ classdef CanBot < handle
         function store_cans(h)
             %% Navigates the robot to a free storage position and
             %  backs one line to dump the cans
-            storage = h.storage_positions(1, :);
+            storage_coords = h.storage_positions(1, :);
             h.storage_positions(1, :) = [];
 
-            storage_coords = storage(1:2);
-            storage_alignment = storage(3:4);
+            if storage_coords(2) > 4
+                storage_alignment = [0 1];
+            else
+                storage_alignment = [0 -1];
+            end
 
             wb_console_print(sprintf('Saving cans in %d,%d alignment %d,%d', storage_coords, storage_alignment), WB_STDOUT);
 
