@@ -27,7 +27,7 @@ can_bot = CanBot('motor_left', 'motor_right', 'dst_front_can', ...
 while true
 	
 	%Initiate scan
-	cans = can_bot.scan_cans();
+	cans = can_bot.scan_cans()
 
 	%End collecting cans
 	if isempty(cans)
@@ -47,3 +47,6 @@ while true
 	
 end
 
+while wb_robot_step(64) ~= -1
+
+end

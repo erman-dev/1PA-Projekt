@@ -4,7 +4,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation 1 0 0 4.71238898038469
-  position -0.00024637648857826446 4.731339395538949 4.455293697744272e-05
+  position 0.2256498198501011 4.731339402135058 0.027233598950688328
   follow "robot"
   followType "None"
 }
@@ -422,7 +422,7 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0.45 0.0375 -0.23
+  translation 0.67 0.0375 -0.23
   children [
     DEF can Shape {
       appearance Appearance {
@@ -488,7 +488,7 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation -0.44 0.0375 0.22
+  translation -0.67 0.0375 0.22
   children [
     DEF can Shape {
       appearance Appearance {
@@ -554,7 +554,7 @@ DEF can Solid {
   }
 }
 DEF can1 Solid {
-  translation 0.67 0.0375 0
+  translation 0.45 0.0375 0
   children [
     DEF can Shape {
       appearance Appearance {

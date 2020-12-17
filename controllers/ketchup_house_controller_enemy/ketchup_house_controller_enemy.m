@@ -6,26 +6,28 @@
 
 addpath('../')
 
-storage_positions = [1 1;
-                	 1 2;
-                	 1 7;
-					 1 6];
-					 
+storage_positions = [
+                1 7;
+                1 6;
+                1 1;
+                1 2;
+                ];
+
 robot_position = [1 4];
 
 %Borders of scan angle
 scan_angle = [120 245];
 
 can_bot = CanBot('motor_left', 'motor_right', 'dst_front_can', ...
-				'dst_front_bot', 'dst_left_bot', 'dst_right_bot', ...
-				'compass', 'infra_left', 'infra_right', ...
-				robot_position, storage_positions, scan_angle, ...
-				32);
+    'dst_front_bot', 'dst_left_bot', 'dst_right_bot', ...
+    'compass', 'infra_left', 'infra_right', ...
+    robot_position, storage_positions, scan_angle, ...
+    32);
 
 % Man can collection program
 while true
 
-    cans = can_bot.scan_cans()
+    cans = can_bot.scan_cans();
 
     %End collecting cans
     if isempty(cans)
@@ -34,15 +36,17 @@ while true
         break;
     end
 
-    %Picup cans 
+    %Picup cans
     for i = 1:size(cans, 1)
         target_coords = cans(i, :);
         can_bot.go_coordinates(target_coords);
     end
-    
+
     %Robot stores cans
     can_bot.store_cans()
 
 end
 
+while wb_robot_step(64) ~= -1
 
+end

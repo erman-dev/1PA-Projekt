@@ -15,7 +15,7 @@ classdef CanBot < handle
         storage_positions           % positions in which to store cans
         turn_slow_down_angle        % angle in which robot slows down
         turn_angle_precision = 0.5  % precision of robot in turns deg
-        speed_default = 3           % speed of robot in rad/s
+        speed_default = 2           % speed of robot in rad/s
         position                    % current position of robot
         default_alignment           % default direction of the robot
         scan_angle                  % two angles between which to scan for cans
@@ -87,7 +87,7 @@ classdef CanBot < handle
             h.default_alignment
         end
 
-        function travel(h, steps)
+        function success = travel(h, steps)
             %% Robot travels specified amount of lines (steps) forwards
             %  or backwards
             arguments
@@ -108,9 +108,10 @@ classdef CanBot < handle
             d_left_bot_prev = 1000;
             d_right_bot_prev = 1000;
             robot_passing = false;
-            roobt_incoming = true;
-            d_diff_threshold = 600; % Distance sifference threshold
-            d_dist_threshold = 300; % Threshold distance
+            robot_incoming = true;
+            d_diff_threshold = 300; % Distance sifference threshold
+            d_dist_threshold = 200; % Threshold distance
+            stop_counter = 0;
 
             % Go!
             wb_motor_set_velocity(h.motor_left, h.speed_default * direction);
@@ -139,7 +140,9 @@ classdef CanBot < handle
                 if (d_front_diff > d_diff_threshold)
                     robot_passing = true;
                 elseif (d_front_bot < d_dist_threshold && ~robot_passing)
-                    %robot_incoming = true;
+                    wb_console_print(sprintf('Neda se nic delat, uhybam'), WB_STDOUT);
+                    success = false;
+                    return;
                 end
 
                 % If the enemy robot is passing in front of us and we come close - stop
@@ -149,6 +152,12 @@ classdef CanBot < handle
 
                     while (wb_robot_step(h.time_step) ~= -1 && d_front_bot ~= 1000)
                         d_front_bot = wb_distance_sensor_get_value(h.dst_front_bot);
+                        stop_counter = stop_counter + 1;
+                        wb_console_print(sprintf('DEBUG: stop_timer %f', stop_counter), WB_STDOUT);
+                        if (stop_counter > 50)
+                            success = false;
+                            return;
+                        end
                     end
 
                     wb_motor_set_velocity(h.motor_left, h.speed_default * direction);
@@ -194,6 +203,7 @@ classdef CanBot < handle
             end
 
             wb_console_print(sprintf('My position is now [%f,%f]', h.position(1), h.position(2)), WB_STDOUT);
+            success = true;
         end
 
         function align(h, bearing)
@@ -395,42 +405,64 @@ classdef CanBot < handle
             % -> 0: the robot is completly missaligned
             matching_coordinate = find(robot_bearing == target_bearing);
 
+            wb_console_print(sprintf('DEBUG: Matching coordinate: %f', matching_coordinate), WB_STDOUT);
+
             wb_console_print(sprintf('Traveling from %d,%d to %d,%d target bearing %d,%d', h.position(1), h.position(2), target_coords(1), target_coords(2), target_bearing(1), target_bearing(2)), WB_STDOUT);
 
             % The robot is not aligned in any axis
-            if (isempty(matching_coordinate))
+            if (isempty(matching_coordinate) || isequal(matching_coordinate, [1,2]))
                 [~, t_axis, t_bearing] = find(target_bearing);
 
-                %wb_console_print(sprintf('DEBUG: t_axis [%d %d] ', t_axis), WB_STDOUT);
-                %wb_console_print(sprintf('DEBUG: t_bearing [%d %d] ', t_bearing), WB_STDOUT)
+                wb_console_print(sprintf('DEBUG: t_axis [%d %d] ', t_axis), WB_STDOUT);
+                wb_console_print(sprintf('DEBUG: t_bearing [%d %d] ', t_bearing), WB_STDOUT)
 
+                % travel only by x axis
                 if (t_axis == 1)
+                    wb_console_print(sprintf('DEBUG: travel by x'), WB_STDOUT);
                     h.align([t_bearing 0]);
                     h.travel(x_diff);
 
                     % travel only by y axis
                 elseif (t_axis == 2)
+                    wb_console_print(sprintf('DEBUG: travel by y'), WB_STDOUT);
                     h.align([0 t_bearing]);
                     h.travel(y_diff);
 
                     % robot is totally misaligned, align by y
                 elseif (isequal(t_axis, [1 2]))
+                    wb_console_print(sprintf('DEBUG: travel by y then x'), WB_STDOUT);
                     h.align([0 t_bearing(2)]);
-                    h.travel(y_diff);
-                    h.align(h.target_bearing(target_coords));
+                    travel_success = h.travel(y_diff);
+                    h.align([ t_bearing(1) 0]);
+                    if (~travel_success)
+                        h.go_coordinates(target_coords);
+                        x_diff = 0;
+                    end
                     h.travel(x_diff);
                 end
 
+            % alingned by x
             elseif (matching_coordinate == 1)
                 wb_console_print(sprintf('X travel first'), WB_STDOUT);
-                h.travel(x_diff);
-                h.align(h.target_bearing(target_coords));
+                travel_success = h.travel(x_diff);
+                t_bearing = h.target_bearing(target_coords);    
+                h.align([ 0 t_bearing(2)]);
+                if (~travel_success)
+                    h.go_coordinates(target_coords);
+                    y_diff = 0;
+                end
                 h.travel(y_diff);
 
+            % aligned by y
             elseif (matching_coordinate == 2)
                 wb_console_print(sprintf('Y travel first'), WB_STDOUT);
-                h.travel(y_diff);
-                h.align(h.target_bearing(target_coords));
+                travel_success = h.travel(y_diff);
+                t_bearing = h.target_bearing(target_coords);    
+                h.align([ t_bearing(1) 0]);
+                if (~travel_success)
+                    h.go_coordinates(target_coords);
+                    x_diff = 0;
+                end
                 h.travel(x_diff)
 
             end
@@ -476,7 +508,7 @@ classdef CanBot < handle
 
                     wb_console_print(sprintf('Can detected! Distance: %f angle %f', distance_can, r_angle), WB_STDOUT);
 
-                    if (abs(distance_bot - distance_can) < 100 && distance_bot ~= 1000)
+                    if (abs(distance_bot - distance_can) < 200 && distance_bot ~= 1000)
                         wb_console_print(sprintf('Never mind, it was a robot, distance: %f', distance_bot), WB_STDOUT);
                     else
                         nearest_cans = cat(1, nearest_cans, [distance_can r_angle]);
