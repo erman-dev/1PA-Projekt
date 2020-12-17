@@ -41,6 +41,4 @@ while true
 
 end
 
-while wb_robot_step(64) ~= -1
 
-end

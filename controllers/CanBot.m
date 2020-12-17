@@ -421,11 +421,21 @@ classdef CanBot < handle
             while wb_robot_step(h.time_step) ~= -1
 
                 distance = wb_distance_sensor_get_value(h.dst_front_can);
+                distance_bot = wb_distance_sensor_get_value(h.dst_front_bot);
                 r_angle = h.get_angle();
 
                 if abs(diff([distance distance_prev])) > 50 && distance ~= 1000
+                   
+                    
+                    if abs(distance_bot - distance) < 100
+                                  
+                    else
+                        nearest_cans = cat(1, nearest_cans, [distance r_angle]);
+                    end
+                
+                  
                     wb_console_print(sprintf('Can detected %f angle %f', distance, r_angle), WB_STDOUT);
-                    nearest_cans = cat(1, nearest_cans, [distance r_angle]);
+                                 
                 end
 
                 distance_prev = distance;
@@ -482,7 +492,6 @@ classdef CanBot < handle
             end
 
         end
-
     end
 
 end
