@@ -105,10 +105,10 @@ classdef CanBot < handle
             % Variables for collision avoidance
             nr_measurements = 0;
             d_front_bot_prev = 1000;
-            d_left_bot_prev = 1000;
-            d_right_bot_prev = 1000;
+            %d_left_bot_prev = 1000;
+            %d_right_bot_prev = 1000;
             robot_passing = false;
-            robot_incoming = true;
+            %robot_incoming = true;
             d_diff_threshold = 300; % Distance sifference threshold
             d_dist_threshold = 200; % Threshold distance
             stop_counter = 0;
@@ -129,8 +129,8 @@ classdef CanBot < handle
 
                 % Prevent colision with enemy robot
                 d_front_bot = wb_distance_sensor_get_value(h.dst_front_bot);
-                d_left_bot = wb_distance_sensor_get_value(h.dst_left_bot);
-                d_right_bot = wb_distance_sensor_get_value(h.dst_right_bot);
+                %d_left_bot = wb_distance_sensor_get_value(h.dst_left_bot);
+                %d_right_bot = wb_distance_sensor_get_value(h.dst_right_bot);
 
                 d_front_diff = diff([d_front_bot, d_front_bot_prev]);
                 %d_left_diff = diff([d_left_bot, d_left_bot_prev]);
@@ -198,8 +198,8 @@ classdef CanBot < handle
 
                 ir_prev = ir_rep;
                 d_front_bot_prev = d_front_bot;
-                d_left_bot_prev = d_left_bot;
-                d_right_bot_prev = d_right_bot;
+                %d_left_bot_prev = d_left_bot;
+                %d_right_bot_prev = d_right_bot;
             end
 
             wb_console_print(sprintf('My position is now [%f,%f]', h.position(1), h.position(2)), WB_STDOUT);
