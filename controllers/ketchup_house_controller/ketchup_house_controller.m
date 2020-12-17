@@ -25,7 +25,7 @@ can_bot = CanBot('motor_left', 'motor_right', 'dst_front_can', ...
 % Man can collection program
 while true
 	
-	cans = can_bot.scan_cans()
+	cans = can_bot.scan_cans();
 
 	if isempty(cans)
 		wb_console_print(sprintf('No more cans to pick up'), WB_STDOUT);

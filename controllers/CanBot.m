@@ -15,8 +15,7 @@ classdef CanBot < handle
         storage_positions% positions in which to store cans
         turn_slow_down_angle% angle in which robot slows down
         turn_angle_precision = 0.5% precision of robot in turns deg
-        speed_default = 4% speed of robot in rad/s
-        diff_threshold = 50% line detection threshold value
+        speed_default = 3% speed of robot in rad/s
         position% current position of robot
         default_alignment% default direction of the robot
         scan_angle% two angles between which to scan for cans
@@ -103,7 +102,7 @@ classdef CanBot < handle
             on_line = false;
             off_line = false;
 
-            wb_console_print(sprintf('I am travelling %d lines forward', steps), WB_STDOUT);
+            wb_console_print(sprintf('I am travelling %d lines', steps), WB_STDOUT);
 
             wb_motor_set_velocity(h.motor_left, h.speed_default * direction);
             wb_motor_set_velocity(h.motor_right, h.speed_default * direction);
@@ -114,20 +113,20 @@ classdef CanBot < handle
                 ir_left = wb_distance_sensor_get_value(h.infra_left);
                 ir_right = wb_distance_sensor_get_value(h.infra_right);
                 ir_rep = mean([ir_left ir_right]);
-                ir_diff = diff([ir_prev ir_rep]);
+                ir_trend = sign(round(ir_rep,-1) - round(ir_prev,-1));
                 nr_measurements = nr_measurements + 1;
 
                 %wb_console_print(sprintf('DEBUG: ir_rep %f', ir_rep), WB_STDOUT);
-                %wb_console_print(sprintf('DEBUG: ir_diff %f', ir_diff), WB_STDOUT);
+                %wb_console_print(sprintf('DEBUG: ir_trend %f', ir_diff, ir_trend), WB_STDOUT);
 
-                if (ir_diff > h.diff_threshold)
+                if (ir_trend == 1)
                     on_line = true;
-                elseif (ir_diff < h.diff_threshold && on_line)
+                elseif ( (ir_trend == 0 || ir_trend == -1 ) && on_line)
                     off_line = true;
                 end
 
                 % Ignore if the robot detects a line in the first few measurements
-                if (on_line && off_line && nr_measurements < h.speed_default * 2)
+                if (on_line && off_line && nr_measurements < 120 / h.speed_default)
                     on_line = false;
                     off_line = false;
 
@@ -137,6 +136,7 @@ classdef CanBot < handle
                     wb_console_print(sprintf('I have reached a line. %d to go', steps_to_travel), WB_STDOUT);
                     on_line = false;
                     off_line = false;
+                    nr_measurements = 0;
                 end
 
                 if (steps_to_travel == 0)
@@ -420,25 +420,23 @@ classdef CanBot < handle
 
             while wb_robot_step(h.time_step) ~= -1
 
-                distance = wb_distance_sensor_get_value(h.dst_front_can);
+                distance_can = wb_distance_sensor_get_value(h.dst_front_can);
                 distance_bot = wb_distance_sensor_get_value(h.dst_front_bot);
                 r_angle = h.get_angle();
 
-                if abs(diff([distance distance_prev])) > 50 && distance ~= 1000
+                if ( abs(diff([distance_can distance_prev])) > 50 && distance_can ~= 1000 )
                    
+                    wb_console_print(sprintf('Can detected! Distance: %f angle %f', distance_can, r_angle), WB_STDOUT);
                     
-                    if abs(distance_bot - distance) < 100
-                                  
+                    if ( abs(distance_bot - distance_can) < 100 && distance_bot ~= 1000)
+                        wb_console_print(sprintf('Never mind, it was a robot, distance: %f', distance_bot), WB_STDOUT);
                     else
-                        nearest_cans = cat(1, nearest_cans, [distance r_angle]);
+                        nearest_cans = cat(1, nearest_cans, [distance_can r_angle]);
                     end
-                
                   
-                    wb_console_print(sprintf('Can detected %f angle %f', distance, r_angle), WB_STDOUT);
-                                 
                 end
 
-                distance_prev = distance;
+                distance_prev = distance_can;
 
                 if abs(h.scan_angle(2) - r_angle) < 5
                     wb_distance_sensor_disable(h.dst_front_can);
