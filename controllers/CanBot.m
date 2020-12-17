@@ -118,6 +118,23 @@ classdef CanBot < handle
 
                 %wb_console_print(sprintf('DEBUG: ir_rep %f', ir_rep), WB_STDOUT);
                 %wb_console_print(sprintf('DEBUG: ir_trend %f', ir_diff, ir_trend), WB_STDOUT);
+                
+                dst_front_bot = wb_distance_sensor_get_value(h.dst_front_bot);
+                dst_left_bot = wb_distance_sensor_get_value(h.dst_left_bot);
+                dst_right_bot = wb_distance_sensor_get_value(h.dst_right_bot);
+
+                if dst_front_bot < 200 || dst_left_bot < 200 || dst_right_bot < 200
+                    wb_motor_set_velocity(h.motor_left, 0);
+                    wb_motor_set_velocity(h.motor_right, 0);
+                    wb_console_print(sprintf('DEBUG: STOP'), WB_STDOUT);
+                    pause(5)
+                    if dst_front_bot < 200 || dst_left_bot < 200 || dst_right_bot < 200
+                        dir = h.get_bearing
+                        h.align(dir * -1)
+                    end
+                    
+                end
+
 
                 if (ir_trend == 1)
                     on_line = true;
@@ -490,6 +507,10 @@ classdef CanBot < handle
             end
 
         end
+        
+        
+
     end
 
 end
+
