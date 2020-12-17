@@ -137,7 +137,7 @@ DEF Ketchup_robot Robot {
         1 1000 0
       ]
       type "laser"
-      resolution 100
+      resolution 1
     }
     DistanceSensor {
       translation -0.067 0.1 -0.18
@@ -149,7 +149,7 @@ DEF Ketchup_robot Robot {
         1 1000 0
       ]
       type "laser"
-      resolution 100
+      resolution 1
     }
     DistanceSensor {
       translation 0.063 0.1 -0.18
@@ -161,7 +161,7 @@ DEF Ketchup_robot Robot {
         1 1000 0
       ]
       type "laser"
-      resolution 100
+      resolution 1
     }
     DistanceSensor {
       translation -0.08 0 -0.1175
@@ -302,7 +302,7 @@ DEF Ketchup_robot Robot {
         1 1000 0
       ]
       type "laser"
-      resolution 100
+      resolution 1
     }
     DistanceSensor {
       translation -0.067 0.1 -0.18
@@ -314,7 +314,7 @@ DEF Ketchup_robot Robot {
         1 1000 0
       ]
       type "laser"
-      resolution 100
+      resolution 1
     }
     DistanceSensor {
       translation 0.063 0.1 -0.18
@@ -326,7 +326,7 @@ DEF Ketchup_robot Robot {
         1 1000 0
       ]
       type "laser"
-      resolution 100
+      resolution 1
     }
     DistanceSensor {
       translation -0.08 0 -0.1175
