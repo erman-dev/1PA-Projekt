@@ -101,55 +101,76 @@ classdef CanBot < handle
             ir_prev = 1000;
             on_line = false;
             off_line = false;
+            
+            % Variables for collision avoidance
+            nr_measurements = 0;
+            d_front_bot_prev = 1000;
+            d_left_bot_prev = 1000;
+            d_right_bot_prev = 1000;
+            robot_passing = false;
+            roobt_incoming = true;
+            d_diff_threshold = 600; % Distance sifference threshold
+            d_dist_threshold = 300; % Threshold distance
 
-            %wb_console_print(sprintf('I am travelling %d lines', steps), WB_STDOUT);
-           
+            % Go!
             wb_motor_set_velocity(h.motor_left, h.speed_default * direction);
             wb_motor_set_velocity(h.motor_right, h.speed_default * direction);
-
-            nr_measurements = 0;
 
             while wb_robot_step(h.time_step) ~= -1
                 ir_left = wb_distance_sensor_get_value(h.infra_left);
                 ir_right = wb_distance_sensor_get_value(h.infra_right);
                 ir_rep = mean([ir_left ir_right]);
-                ir_trend = sign(round(ir_rep,-1) - round(ir_prev,-1));
+                ir_trend = sign(round(ir_rep, -1) - round(ir_prev, -1));
                 nr_measurements = nr_measurements + 1;
 
                 %wb_console_print(sprintf('DEBUG: ir_rep %f', ir_rep), WB_STDOUT);
                 %wb_console_print(sprintf('DEBUG: ir_trend %f', ir_diff, ir_trend), WB_STDOUT);
-                
 
-                %Prevent colision with enemy robot
-                dst_front_bot = wb_distance_sensor_get_value(h.dst_front_bot);
-                dst_left_bot = wb_distance_sensor_get_value(h.dst_left_bot);
-                dst_right_bot = wb_distance_sensor_get_value(h.dst_right_bot);
+                % Prevent colision with enemy robot
+                d_front_bot = wb_distance_sensor_get_value(h.dst_front_bot);
+                d_left_bot = wb_distance_sensor_get_value(h.dst_left_bot);
+                d_right_bot = wb_distance_sensor_get_value(h.dst_right_bot);
 
-                if dst_front_bot < 200 || dst_left_bot < 200 || dst_right_bot < 200
-                    wb_motor_set_velocity(h.motor_left, 0);
-                    wb_motor_set_velocity(h.motor_right, 0);
-                   
-                    wb_console_print(sprintf('DEBUG: STOP'), WB_STDOUT);
+                d_front_diff = diff([d_front_bot, d_front_bot_prev]);
+                %d_left_diff = diff([d_left_bot, d_left_bot_prev]);
+                %d_right_diff = diff([d_right_bot, d_right_bot_prev]);
 
-                    if dst_front_bot < 200 || dst_left_bot < 200 || dst_right_bot < 200
-                        dir = h.get_bearing
-                        h.align(dir * -1)
-                    end
-                    
+                % Robot detected passing in front of us
+                if (d_front_diff > d_diff_threshold)
+                    robot_passing = true;
+                elseif (d_front_bot < d_dist_threshold && ~robot_passing)
+                    %robot_incoming = true;
                 end
 
+                % If the enemy robot is passing in front of us and we come close - stop
+                if (robot_passing && d_front_bot < d_dist_threshold * 1.5)
+                    wb_motor_set_velocity(h.motor_left, 0);
+                    wb_motor_set_velocity(h.motor_right, 0);
 
+                    while (wb_robot_step(h.time_step) ~= -1 && d_front_bot ~= 1000)
+                        d_front_bot = wb_distance_sensor_get_value(h.dst_front_bot);
+                    end
+
+                    wb_motor_set_velocity(h.motor_left, h.speed_default * direction);
+                    wb_motor_set_velocity(h.motor_right, h.speed_default * direction);
+                    robot_passing = false;
+                end
+
+                % Start of line detected
                 if (ir_trend == 1)
                     on_line = true;
-                elseif ( (ir_trend == 0 || ir_trend == -1 ) && on_line)
+                    % end of line detected
+                elseif ((ir_trend == 0 || ir_trend == -1) && on_line)
                     off_line = true;
                 end
 
                 % Ignore if the robot detects a line in the first few measurements
+                % after start and after every line
                 if (on_line && off_line && nr_measurements < 120 / h.speed_default)
                     on_line = false;
                     off_line = false;
 
+                    % Line detected
                 elseif (on_line && off_line)
                     h.position = h.position + robot_bearing * direction;
                     steps_to_travel = steps_to_travel - sign(steps_to_travel);
@@ -159,6 +180,7 @@ classdef CanBot < handle
                     nr_measurements = 0;
                 end
 
+                % Destination reached
                 if (steps_to_travel == 0)
                     wb_motor_set_velocity(h.motor_left, 0);
                     wb_motor_set_velocity(h.motor_right, 0);
@@ -166,6 +188,9 @@ classdef CanBot < handle
                 end
 
                 ir_prev = ir_rep;
+                d_front_bot_prev = d_front_bot;
+                d_left_bot_prev = d_left_bot;
+                d_right_bot_prev = d_right_bot;
             end
 
             wb_console_print(sprintf('My position is now [%f,%f]', h.position(1), h.position(2)), WB_STDOUT);
@@ -223,7 +248,7 @@ classdef CanBot < handle
             wb_motor_set_velocity(h.motor_left, h.speed_default * rotation_direction * -1);
             wb_motor_set_velocity(h.motor_right, h.speed_default * rotation_direction);
 
-            % Chooses better rotation direction 
+            % Chooses better rotation direction
             while wb_robot_step(h.time_step) ~= -1
                 r_angle = h.get_angle();
 
@@ -431,7 +456,6 @@ classdef CanBot < handle
 
             [cwa, ccwa] = h.get_angle_diff(h.scan_angle(1), h.scan_angle(2));
 
-           
             if (ccwa < cwa)
                 rotation_direction = 1;
             else
@@ -446,18 +470,18 @@ classdef CanBot < handle
                 distance_can = wb_distance_sensor_get_value(h.dst_front_can);
                 distance_bot = wb_distance_sensor_get_value(h.dst_front_bot);
                 r_angle = h.get_angle();
-                
+
                 %Ignores enemy robot and measure can distances and angles
-                if ( abs(diff([distance_can distance_prev])) > 50 && distance_can ~= 1000 )
-                   
+                if (abs(diff([distance_can distance_prev])) > 50 && distance_can ~= 1000)
+
                     wb_console_print(sprintf('Can detected! Distance: %f angle %f', distance_can, r_angle), WB_STDOUT);
-                    
-                    if ( abs(distance_bot - distance_can) < 100 && distance_bot ~= 1000)
+
+                    if (abs(distance_bot - distance_can) < 100 && distance_bot ~= 1000)
                         wb_console_print(sprintf('Never mind, it was a robot, distance: %f', distance_bot), WB_STDOUT);
                     else
                         nearest_cans = cat(1, nearest_cans, [distance_can r_angle]);
                     end
-                  
+
                 end
 
                 distance_prev = distance_can;
@@ -516,10 +540,7 @@ classdef CanBot < handle
             end
 
         end
-        
-        
 
     end
 
 end
-
