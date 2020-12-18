@@ -5,8 +5,6 @@ classdef CanBot < handle
         motor_right                 % text handle of device
         dst_front_can               % text handle of device
         dst_front_bot               % text handle of device
-        dst_left_bot                % text handle of device
-        dst_right_bot               % text handle of device
         compass                     % text handle of device
         infra_left                  % text handle of device
         infra_right                 % text handle of device
@@ -25,7 +23,6 @@ classdef CanBot < handle
 
         function h = CanBot(motor_left_handle, motor_right_handle, ...
                 dst_front_can_handle, dst_front_bot_handle, ...
-                dst_left_bot_handle, dst_right_bot_handle, ...
                 compass_handle, ...
                 infra_left_handle, infra_right_handle, ...
                 position, storage_positions, scan_angle, ...
@@ -39,8 +36,6 @@ classdef CanBot < handle
                 motor_right_handle char
                 dst_front_can_handle char
                 dst_front_bot_handle char
-                dst_left_bot_handle char
-                dst_right_bot_handle char
                 compass_handle char
                 infra_left_handle char
                 infra_right_handle char
@@ -62,8 +57,6 @@ classdef CanBot < handle
             h.compass = wb_robot_get_device(compass_handle);
             h.dst_front_can = wb_robot_get_device(dst_front_can_handle);
             h.dst_front_bot = wb_robot_get_device(dst_front_bot_handle);
-            h.dst_left_bot = wb_robot_get_device(dst_left_bot_handle);
-            h.dst_right_bot = wb_robot_get_device(dst_right_bot_handle);
             h.infra_left = wb_robot_get_device(infra_left_handle);
             h.infra_right = wb_robot_get_device(infra_right_handle);
 
@@ -71,8 +64,6 @@ classdef CanBot < handle
             wb_distance_sensor_enable(h.infra_left, h.time_step);
             wb_distance_sensor_enable(h.infra_right, h.time_step);
             wb_distance_sensor_enable(h.dst_front_bot, h.time_step);
-            wb_distance_sensor_enable(h.dst_left_bot, h.time_step);
-            wb_distance_sensor_enable(h.dst_right_bot, h.time_step);
             wb_compass_enable(h.compass, h.time_step);
 
             % Set motor positions

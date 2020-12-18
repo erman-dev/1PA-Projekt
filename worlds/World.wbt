@@ -4,7 +4,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation 1 0 0 4.71238898038469
-  position 0.2256498198501011 4.731339402135058 0.027233598950688328
+  position 8.186912879615955e-13 5.980242741129292 -1.595456617282558e-12
   follow "robot"
   followType "None"
 }
@@ -132,30 +132,6 @@ DEF Ketchup_robot Robot {
       translation -0.047 0.1 -0.18
       rotation 0 1 0 1.5707996938995747
       name "dst_front_bot"
-      lookupTable [
-        0 0 0
-        1 1000 0
-      ]
-      type "laser"
-      resolution 1
-    }
-    DistanceSensor {
-      translation -0.067 0.1 -0.18
-      rotation 0 1 0 1.8326
-      scale 1.06192 1.06192 1.06192
-      name "dst_left_bot"
-      lookupTable [
-        0 0 0
-        1 1000 0
-      ]
-      type "laser"
-      resolution 1
-    }
-    DistanceSensor {
-      translation 0.063 0.1 -0.18
-      rotation 0 -1 0 -1.3090053071795866
-      scale 1.06192 1.06192 1.06192
-      name "dst_right_bot"
       lookupTable [
         0 0 0
         1 1000 0
@@ -305,30 +281,6 @@ DEF Ketchup_robot Robot {
       resolution 1
     }
     DistanceSensor {
-      translation -0.067 0.1 -0.18
-      rotation 0 1 0 1.8326
-      scale 1.06192 1.06192 1.06192
-      name "dst_left_bot"
-      lookupTable [
-        0 0 0
-        1 1000 0
-      ]
-      type "laser"
-      resolution 1
-    }
-    DistanceSensor {
-      translation 0.063 0.1 -0.18
-      rotation 0 -1 0 -1.3090053071795866
-      scale 1.06192 1.06192 1.06192
-      name "dst_right_bot"
-      lookupTable [
-        0 0 0
-        1 1000 0
-      ]
-      type "laser"
-      resolution 1
-    }
-    DistanceSensor {
       translation -0.08 0 -0.1175
       rotation 0 0 1 -1.5707953071795862
       name "infra_left"
@@ -389,7 +341,40 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0.23 0.0375 0
+  translation -0.22 0.0375 0.22
+  children [
+    DEF can Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.75
+          diffuseColor 1 1 1
+          shininess 1
+        }
+        texture ImageTexture {
+          url [
+            "resources/can.png"
+          ]
+          repeatS FALSE
+          repeatT FALSE
+        }
+      }
+      geometry Cylinder {
+        height 0.075
+        radius 0.0275
+      }
+    }
+  ]
+  name "solid(4)"
+  boundingObject USE can
+  physics DEF physics_can Physics {
+    density -1
+    mass 0.05
+    damping Damping {
+    }
+  }
+}
+DEF can Solid {
+  translation 0.22 0.0375 0
   children [
     DEF can Shape {
       appearance Appearance {
@@ -413,6 +398,39 @@ DEF can Solid {
     }
   ]
   name "solid(5)"
+  boundingObject USE can
+  physics DEF physics_can Physics {
+    density -1
+    mass 0.05
+    damping Damping {
+    }
+  }
+}
+DEF can Solid {
+  translation 0.22 0.0375 -0.22
+  children [
+    DEF can Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.75
+          diffuseColor 1 1 1
+          shininess 1
+        }
+        texture ImageTexture {
+          url [
+            "resources/can.png"
+          ]
+          repeatS FALSE
+          repeatT FALSE
+        }
+      }
+      geometry Cylinder {
+        height 0.075
+        radius 0.0275
+      }
+    }
+  ]
+  name "solid(8)"
   boundingObject USE can
   physics DEF physics_can Physics {
     density -1
@@ -455,7 +473,7 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0 0.0375 -0.23
+  translation -0.45 0.0375 -0.23
   children [
     DEF can Shape {
       appearance Appearance {
@@ -521,7 +539,7 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0 0.0375 0.23
+  translation 0.45 0.0375 0.22
   children [
     DEF can Shape {
       appearance Appearance {
@@ -553,8 +571,8 @@ DEF can Solid {
     }
   }
 }
-DEF can1 Solid {
-  translation 0.45 0.0375 0
+DEF can Solid {
+  translation -0.66 0.0375 0
   children [
     DEF can Shape {
       appearance Appearance {
