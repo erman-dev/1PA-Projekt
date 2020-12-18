@@ -101,14 +101,11 @@ classdef CanBot < handle
             ir_prev = 1000;
             on_line = false;
             off_line = false;
-            
+
             % Variables for collision avoidance
             nr_measurements = 0;
             d_front_bot_prev = 1000;
-            %d_left_bot_prev = 1000;
-            %d_right_bot_prev = 1000;
             robot_passing = false;
-            %robot_incoming = true;
             d_diff_threshold = 300; % Distance sifference threshold
             d_dist_threshold = 200; % Threshold distance
             stop_counter = 0;
@@ -124,23 +121,14 @@ classdef CanBot < handle
                 ir_trend = sign(round(ir_rep, -1) - round(ir_prev, -1));
                 nr_measurements = nr_measurements + 1;
 
-                %wb_console_print(sprintf('DEBUG: ir_rep %f', ir_rep), WB_STDOUT);
-                %wb_console_print(sprintf('DEBUG: ir_trend %f', ir_diff, ir_trend), WB_STDOUT);
-
                 % Prevent colision with enemy robot
                 d_front_bot = wb_distance_sensor_get_value(h.dst_front_bot);
-                %d_left_bot = wb_distance_sensor_get_value(h.dst_left_bot);
-                %d_right_bot = wb_distance_sensor_get_value(h.dst_right_bot);
-
                 d_front_diff = diff([d_front_bot, d_front_bot_prev]);
-                %d_left_diff = diff([d_left_bot, d_left_bot_prev]);
-                %d_right_diff = diff([d_right_bot, d_right_bot_prev]);
 
                 % Robot detected passing in front of us
                 if (d_front_diff > d_diff_threshold)
                     robot_passing = true;
-                elseif (d_front_bot < d_dist_threshold && ~robot_passing)
-                    wb_console_print(sprintf('Neda se nic delat, uhybam'), WB_STDOUT);
+                elseif (d_front_bot < d_dist_threshold &&~robot_passing)
                     success = false;
                     return;
                 end
@@ -153,11 +141,12 @@ classdef CanBot < handle
                     while (wb_robot_step(h.time_step) ~= -1 && d_front_bot ~= 1000)
                         d_front_bot = wb_distance_sensor_get_value(h.dst_front_bot);
                         stop_counter = stop_counter + 1;
-                        wb_console_print(sprintf('DEBUG: stop_timer %f', stop_counter), WB_STDOUT);
+
                         if (stop_counter > 50)
                             success = false;
                             return;
                         end
+
                     end
 
                     wb_motor_set_velocity(h.motor_left, h.speed_default * direction);
@@ -178,7 +167,6 @@ classdef CanBot < handle
                 if (on_line && off_line && nr_measurements < 120 / h.speed_default)
                     on_line = false;
                     off_line = false;
-
                     % Line detected
                 elseif (on_line && off_line)
                     h.position = h.position + robot_bearing * direction;
@@ -198,11 +186,8 @@ classdef CanBot < handle
 
                 ir_prev = ir_rep;
                 d_front_bot_prev = d_front_bot;
-                %d_left_bot_prev = d_left_bot;
-                %d_right_bot_prev = d_right_bot;
             end
 
-            wb_console_print(sprintf('My position is now [%f,%f]', h.position(1), h.position(2)), WB_STDOUT);
             success = true;
         end
 
@@ -251,10 +236,6 @@ classdef CanBot < handle
                 rotation_direction = -1;
             end
 
-            %wb_console_print(sprintf('CW %f, CCW %f', cwa, ccwa), WB_STDOUT);
-            %wb_console_print(sprintf('Robot angle %d', r_angle), WB_STDOUT);
-            %wb_console_print(sprintf('Target angle %d', t_angle), WB_STDOUT);
-
             wb_motor_set_velocity(h.motor_left, h.speed_default * rotation_direction * -1);
             wb_motor_set_velocity(h.motor_right, h.speed_default * rotation_direction);
 
@@ -284,8 +265,6 @@ classdef CanBot < handle
                     break;
                 end
 
-                % wb_console_print(sprintf('CW %f, CCW %f', cwa, ccwa), WB_STDOUT);
-                % wb_console_print(sprintf('Remainning %f Prev %f', angle_remaining, angle_prev), WB_STDOUT);
             end
 
         end
@@ -302,7 +281,8 @@ classdef CanBot < handle
                 storage_alignment = [0 -1];
             end
 
-            wb_console_print(sprintf('Saving cans in %d,%d alignment %d,%d', storage_coords, storage_alignment), WB_STDOUT);
+            wb_console_print(sprintf('Saving cans in %d,%d alignment %d,%d', ...
+                                 storage_coords, storage_alignment), WB_STDOUT);
 
             h.go_coordinates(storage_coords)
             h.align(storage_alignment)
@@ -362,8 +342,6 @@ classdef CanBot < handle
 
             deg_bearing = h.get_angle();
 
-            % wb_console_print(sprintf('Deg bearing %d', deg_bearing), WB_STDOUT);
-
             if (abs(deg_bearing - 0) < 5 || abs(deg_bearing - 360) < 5)
                 bearing = [-1 0];
             elseif (abs(deg_bearing - 90) < 5)
@@ -405,12 +383,8 @@ classdef CanBot < handle
             % -> 0: the robot is completly missaligned
             matching_coordinate = find(robot_bearing == target_bearing);
 
-            wb_console_print(sprintf('DEBUG: Matching coordinate: %f', matching_coordinate), WB_STDOUT);
-
-            wb_console_print(sprintf('Traveling from %d,%d to %d,%d target bearing %d,%d', h.position(1), h.position(2), target_coords(1), target_coords(2), target_bearing(1), target_bearing(2)), WB_STDOUT);
-
             % The robot is not aligned in any axis
-            if (isempty(matching_coordinate) || isequal(matching_coordinate, [1,2]))
+            if (isempty(matching_coordinate) || isequal(matching_coordinate, [1, 2]))
                 [~, t_axis, t_bearing] = find(target_bearing);
 
                 wb_console_print(sprintf('DEBUG: t_axis [%d %d] ', t_axis), WB_STDOUT);
@@ -433,11 +407,13 @@ classdef CanBot < handle
                     wb_console_print(sprintf('DEBUG: travel by y then x'), WB_STDOUT);
                     h.align([0 t_bearing(2)]);
                     travel_success = h.travel(y_diff);
-                    h.align([ t_bearing(1) 0]);
+                    h.align([t_bearing(1) 0]);
+
                     if (~travel_success)
                         h.go_coordinates(target_coords);
                         x_diff = 0;
                     end
+
                     h.travel(x_diff);
                 end
 
@@ -445,29 +421,32 @@ classdef CanBot < handle
             elseif (matching_coordinate == 1)
                 wb_console_print(sprintf('X travel first'), WB_STDOUT);
                 travel_success = h.travel(x_diff);
-                t_bearing = h.target_bearing(target_coords);    
-                h.align([ 0 t_bearing(2)]);
+                t_bearing = h.target_bearing(target_coords);
+                h.align([0 t_bearing(2)]);
+
                 if (~travel_success)
                     h.go_coordinates(target_coords);
                     y_diff = 0;
                 end
+
                 h.travel(y_diff);
 
             % aligned by y
             elseif (matching_coordinate == 2)
                 wb_console_print(sprintf('Y travel first'), WB_STDOUT);
                 travel_success = h.travel(y_diff);
-                t_bearing = h.target_bearing(target_coords);    
-                h.align([ t_bearing(1) 0]);
+                t_bearing = h.target_bearing(target_coords);
+                h.align([t_bearing(1) 0]);
+
                 if (~travel_success)
                     h.go_coordinates(target_coords);
                     x_diff = 0;
                 end
+
                 h.travel(x_diff)
 
             end
 
-            wb_console_print(sprintf('End move'), WB_STDOUT);
         end
 
         function cans_pos = scan_cans(h)
@@ -481,10 +460,6 @@ classdef CanBot < handle
 
             % Turn robot to scan angle
             h.turn(h.scan_angle(1))
-
-            %wb_console_print(sprintf('DEBUG: Turned to angle scan angle 1 - %d', h.scan_angle(1)), WB_STDOUT);
-
-            %wb_console_print(sprintf('Angle is %f\n', h.get_angle()), WB_STDOUT)
 
             [cwa, ccwa] = h.get_angle_diff(h.scan_angle(1), h.scan_angle(2));
 
@@ -503,14 +478,10 @@ classdef CanBot < handle
                 distance_bot = wb_distance_sensor_get_value(h.dst_front_bot);
                 r_angle = h.get_angle();
 
-                %Ignores enemy robot and measure can distances and angles
+                % Ignores enemy robot and measure can distances and angles
                 if (abs(diff([distance_can distance_prev])) > 50 && distance_can ~= 1000)
 
-                    wb_console_print(sprintf('Can detected! Distance: %f angle %f', distance_can, r_angle), WB_STDOUT);
-
-                    if (abs(distance_bot - distance_can) < 200 && distance_bot ~= 1000)
-                        wb_console_print(sprintf('Never mind, it was a robot, distance: %f', distance_bot), WB_STDOUT);
-                    else
+                    if (~(abs(distance_bot - distance_can) < 200 && distance_bot ~= 1000))
                         nearest_cans = cat(1, nearest_cans, [distance_can r_angle]);
                     end
 
@@ -518,7 +489,7 @@ classdef CanBot < handle
 
                 distance_prev = distance_can;
 
-                %Evaluate nearest cans
+                % Evaluate nearest cans
                 if abs(h.scan_angle(2) - r_angle) < 5
                     wb_distance_sensor_disable(h.dst_front_can);
                     wb_motor_set_velocity(h.motor_left, 0);
@@ -535,15 +506,13 @@ classdef CanBot < handle
                         n = 3;
                     end
 
-                    %wb_console_print(sprintf('Choosing %d. \n', n), WB_STDOUT);
-
                     [~, idx] = sort(nearest_cans(:, 1));
                     cans_to_deliver = nearest_cans(idx, :);
                     cans_to_deliver = cans_to_deliver(1:n, :);
 
                     wb_console_print(sprintf('Choosing %d. \n', cans_to_deliver), WB_STDOUT);
 
-                    %Transfom length and angle to coordinates
+                    % Transfom length and angle to coordinates
                     i = 1;
                     square = 200; % dimension of one sqaure in mm
                     cans_pos = []; % empty array for the final can coordinates
@@ -562,9 +531,7 @@ classdef CanBot < handle
 
                     end
 
-                    %wb_console_print(sprintf('Before align'), WB_STDOUT);
                     h.align(h.default_alignment);
-                    %wb_console_print(sprintf('After align'), WB_STDOUT);
 
                     return
                 end

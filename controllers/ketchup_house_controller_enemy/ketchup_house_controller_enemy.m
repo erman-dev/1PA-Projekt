@@ -24,25 +24,25 @@ can_bot = CanBot('motor_left', 'motor_right', 'dst_front_can', ...
     robot_position, storage_positions, scan_angle, ...
     32);
 
-% Man can collection program
+% Main can collection program
 while true
 
     cans = can_bot.scan_cans();
 
-    %End collecting cans
+    % End collecting cans
     if isempty(cans)
         wb_console_print(sprintf('No more cans to pick up'), WB_STDOUT);
         can_bot.align(can_bot.default_alignment);
         break;
     end
 
-    %Picup cans
+    % Pickup cans
     for i = 1:size(cans, 1)
         target_coords = cans(i, :);
         can_bot.go_coordinates(target_coords);
     end
 
-    %Robot stores cans
+    % Stores cans
     can_bot.store_cans()
 
 end
