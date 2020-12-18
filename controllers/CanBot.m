@@ -275,6 +275,12 @@ classdef CanBot < handle
             storage_coords = h.storage_positions(1, :);
             h.storage_positions(1, :) = [];
 
+            if storage_coords(1) > 4
+                safe_coords = [storage_coords(1)-1, storage_coords(2)];
+            else
+                safe_coords = [storage_coords(1)+1, storage_coords(2)];
+            end
+
             if storage_coords(2) > 4
                 storage_alignment = [0 1];
             else
@@ -284,8 +290,9 @@ classdef CanBot < handle
             wb_console_print(sprintf('Saving cans in %d,%d alignment %d,%d', ...
                                  storage_coords, storage_alignment), WB_STDOUT);
 
-            h.go_coordinates(storage_coords)
-            h.align(storage_alignment)
+            h.go_coordinates(safe_coords);
+            h.go_coordinates(storage_coords);
+            h.align(storage_alignment);
             h.travel(abs(4 - storage_coords(2)) * -1);
             h.align(h.default_alignment);
         end
