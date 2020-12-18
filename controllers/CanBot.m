@@ -171,7 +171,7 @@ classdef CanBot < handle
                 elseif (on_line && off_line)
                     h.position = h.position + robot_bearing * direction;
                     steps_to_travel = steps_to_travel - sign(steps_to_travel);
-                    wb_console_print(sprintf('I have reached a line. %d to go', steps_to_travel), WB_STDOUT);
+                    %wb_console_print(sprintf('I have reached a line. %d to go', steps_to_travel), WB_STDOUT);
                     on_line = false;
                     off_line = false;
                     nr_measurements = 0;
@@ -224,7 +224,7 @@ classdef CanBot < handle
             r_angle = h.get_angle();
 
             if (abs(r_angle - t_angle) < 5)
-                wb_console_print(sprintf('No aligmnet needed'), WB_STDOUT);
+                %wb_console_print(sprintf('No aligmnet needed'), WB_STDOUT);
                 return;
             end
 
@@ -287,8 +287,8 @@ classdef CanBot < handle
                 storage_alignment = [0 -1];
             end
 
-            wb_console_print(sprintf('Saving cans in %d,%d alignment %d,%d', ...
-                                 storage_coords, storage_alignment), WB_STDOUT);
+            %wb_console_print(sprintf('Saving cans in %d,%d alignment %d,%d', ...
+            %                     storage_coords, storage_alignment), WB_STDOUT);
 
             h.go_coordinates(safe_coords);
             h.go_coordinates(storage_coords);
@@ -394,24 +394,21 @@ classdef CanBot < handle
             if (isempty(matching_coordinate) || isequal(matching_coordinate, [1, 2]))
                 [~, t_axis, t_bearing] = find(target_bearing);
 
-                wb_console_print(sprintf('DEBUG: t_axis [%d %d] ', t_axis), WB_STDOUT);
-                wb_console_print(sprintf('DEBUG: t_bearing [%d %d] ', t_bearing), WB_STDOUT)
-
                 % travel only by x axis
                 if (t_axis == 1)
-                    wb_console_print(sprintf('DEBUG: travel by x'), WB_STDOUT);
+                    %wb_console_print(sprintf('DEBUG: travel by x'), WB_STDOUT);
                     h.align([t_bearing 0]);
                     h.travel(x_diff);
 
                     % travel only by y axis
                 elseif (t_axis == 2)
-                    wb_console_print(sprintf('DEBUG: travel by y'), WB_STDOUT);
+                    %wb_console_print(sprintf('DEBUG: travel by y'), WB_STDOUT);
                     h.align([0 t_bearing]);
                     h.travel(y_diff);
 
                     % robot is totally misaligned, align by y
                 elseif (isequal(t_axis, [1 2]))
-                    wb_console_print(sprintf('DEBUG: travel by y then x'), WB_STDOUT);
+                    %wb_console_print(sprintf('DEBUG: travel by y then x'), WB_STDOUT);
                     h.align([0 t_bearing(2)]);
                     travel_success = h.travel(y_diff);
                     h.align([t_bearing(1) 0]);
@@ -426,7 +423,7 @@ classdef CanBot < handle
 
             % alingned by x
             elseif (matching_coordinate == 1)
-                wb_console_print(sprintf('X travel first'), WB_STDOUT);
+                %wb_console_print(sprintf('X travel first'), WB_STDOUT);
                 travel_success = h.travel(x_diff);
                 t_bearing = h.target_bearing(target_coords);
                 h.align([0 t_bearing(2)]);
@@ -440,7 +437,7 @@ classdef CanBot < handle
 
             % aligned by y
             elseif (matching_coordinate == 2)
-                wb_console_print(sprintf('Y travel first'), WB_STDOUT);
+                %wb_console_print(sprintf('Y travel first'), WB_STDOUT);
                 travel_success = h.travel(y_diff);
                 t_bearing = h.target_bearing(target_coords);
                 h.align([t_bearing(1) 0]);
@@ -516,8 +513,6 @@ classdef CanBot < handle
                     [~, idx] = sort(nearest_cans(:, 1));
                     cans_to_deliver = nearest_cans(idx, :);
                     cans_to_deliver = cans_to_deliver(1:n, :);
-
-                    wb_console_print(sprintf('Choosing %d. \n', cans_to_deliver), WB_STDOUT);
 
                     % Transfom length and angle to coordinates
                     i = 1;
