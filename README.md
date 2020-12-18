@@ -10,7 +10,7 @@ Pro navigaci robot využívá dva infrared senzory k detekci čar umístěné hn
 
 Souřadnicový systém používaný k navigaci začíná v levém horním rohu mřížky souřadnicemi `[1,1]` a končí v pravém dolním rohu souřadnicemi `[7,7]`
 
-[Odkaz na Youtube video popisující robota](https://www.youtube.com/watch?v=DLzxrzFCyOs)
+[Odkaz na Youtube video popisující robota](https://youtu.be/KiVvE5tHudo)
 
 ![Playing field top view](https://github.com/Erman2/1PA-Projekt/blob/master/docs/world_top_view.png)
 
@@ -78,4 +78,5 @@ end
 ```
 Tato smyčka zajití, že se simulace neukončí hned potom, co pouze jeden z robotů ukončí sbírání.
 
-
+## Poznámky
+Roboti mají nastavenou velmi malou rychlost, protože plechovky se při vyšších rychlostech přestávají řídit fyzikálními zákony a začínají všude lítat. Doporučené je proto simulaci spoštět v zrychleném módu.
