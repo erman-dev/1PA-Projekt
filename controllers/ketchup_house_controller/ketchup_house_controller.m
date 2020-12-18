@@ -2,43 +2,50 @@
 % File:          ketchup_house_controller.m
 % Date:
 % Description:
-% Author:
-% Modifications:
+% Author: Roman Krček, Karel Hejl
 
-% uncomment the next two lines if you want to use
-% MATLAB's desktop to interact with the controller:
-% desktop;
-% keyboard;
+addpath('../')
 
-TIME_STEP = 64;
+storage_positions = [7 1;
+                     7 2;
+                     7 7;
+					 7 6];
+					 
+robot_position = [7 4];
 
-% get and enable devices, e.g.:
-%  camera = wb_robot_get_device('camera');
-%  wb_camera_enable(camera, TIME_STEP);
-motor_left = wb_robot_get_device('motor_left');
-motor_right = wb_robot_get_device('motor_right');
-wb_motor_set_position(motor_left, inf);
-wb_motor_set_velocity(motor_left, 1);
-wb_motor_set_position(motor_right, inf);
-wb_motor_set_velocity(motor_right, 1);
+% Borders of scan angle
+scan_angle = [65 300];
 
-% main loop:
-% perform simulation steps of TIME_STEP milliseconds
-% and leave the loop when Webots signals the termination
-%
-while wb_robot_step(TIME_STEP) ~= -1
+can_bot = CanBot('motor_left', 'motor_right', 'dst_front_can', ...
+				'dst_front_bot', 'compass', 'infra_left', 'infra_right', ...
+				robot_position, storage_positions, scan_angle, ...
+				32);
 
-  % read the sensors, e.g.:
-  %  rgb = wb_camera_get_image(camera);
 
-  % Process here sensor data, images, etc.
+% Main can collection program
+while true
+	
+	% Initiate scan
+	cans = can_bot.scan_cans();
 
-  % send actuator commands, e.g.:
-  %  wb_motor_set_postion(motor, 10.0);
-
-  % if your code plots some graphics, it needs to flushed like this:
-  drawnow;
-
+	% End collecting cans
+	if isempty(cans)
+		wb_console_print(sprintf('No more cans to pick up'), WB_STDOUT);
+		can_bot.align(can_bot.default_alignment);
+		break;
+	end
+	
+	% Pickup cans 
+	for i = 1:size(cans, 1)
+		target_coords = cans(i, :);
+		can_bot.go_coordinates(target_coords);
+	end
+	
+	% Store cans
+	can_bot.store_cans()
+	
 end
 
-% cleanup code goes here: write data to files, etc.
+while wb_robot_step(64) ~= -1
+
+end
