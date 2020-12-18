@@ -84,7 +84,6 @@ classdef CanBot < handle
             % Calculate variables
             h.turn_slow_down_angle = h.speed_default * 1.5;
             h.default_alignment = h.get_bearing();
-            h.default_alignment
         end
 
         function success = travel(h, steps)
@@ -118,8 +117,13 @@ classdef CanBot < handle
                 ir_left = wb_distance_sensor_get_value(h.infra_left);
                 ir_right = wb_distance_sensor_get_value(h.infra_right);
                 ir_rep = mean([ir_left ir_right]);
-                ir_trend = sign(round(ir_rep, -1) - round(ir_prev, -1));
                 nr_measurements = nr_measurements + 1;
+
+                if abs(ir_rep - ir_prev) > 1
+                    ir_trend = sign(ir_rep - ir_prev);
+                end
+
+                %wb_console_print(sprintf('DEBUG: ir_trend %f', ir_trend), WB_STDOUT);
 
                 % Prevent colision with enemy robot
                 d_front_bot = wb_distance_sensor_get_value(h.dst_front_bot);
@@ -134,7 +138,7 @@ classdef CanBot < handle
                 end
 
                 % If the enemy robot is passing in front of us and we come close - stop
-                if (robot_passing && d_front_bot < d_dist_threshold * 1.5)
+                if (robot_passing && d_front_bot < d_dist_threshold * 2)
                     wb_motor_set_velocity(h.motor_left, 0);
                     wb_motor_set_velocity(h.motor_right, 0);
 
@@ -164,14 +168,14 @@ classdef CanBot < handle
 
                 % Ignore if the robot detects a line in the first few measurements
                 % after start and after every line
-                if (on_line && off_line && nr_measurements < 120 / h.speed_default)
+                if (on_line && off_line && nr_measurements < 80 / h.speed_default)
                     on_line = false;
                     off_line = false;
                     % Line detected
                 elseif (on_line && off_line)
                     h.position = h.position + robot_bearing * direction;
                     steps_to_travel = steps_to_travel - sign(steps_to_travel);
-                    %wb_console_print(sprintf('I have reached a line. %d to go', steps_to_travel), WB_STDOUT);
+                    wb_console_print(sprintf('I have reached a line. %d to go', steps_to_travel), WB_STDOUT);
                     on_line = false;
                     off_line = false;
                     nr_measurements = 0;
@@ -460,7 +464,6 @@ classdef CanBot < handle
             distance_prev = 10000;
             nearest_cans = [];
             cans_pos = [];
-            wb_console_print(sprintf('Scan angle is from %f to %f\n', h.scan_angle(1), h.scan_angle(2)), WB_STDOUT)
 
             % Turn robot to scan angle
             h.turn(h.scan_angle(1))
@@ -519,18 +522,30 @@ classdef CanBot < handle
                     square = 200; % dimension of one sqaure in mm
                     cans_pos = []; % empty array for the final can coordinates
 
-                    while i ~= n + 1
+                    while ~isempty(cans_to_deliver)
                         can = cans_to_deliver(i, :);
+                        cans_to_deliver(i, :) = [];
                         y_diff = sind(can(2)) * can(1) - 30;
                         y_sqaure_diff = round(y_diff / square);
                         x_diff = cosd(can(2)) * can(1);
                         x_sqaure_diff = round(x_diff / square);
 
-                        can_rel_pos = [x_sqaure_diff * -1, y_sqaure_diff];
-                        can_abs_pos = h.position + can_rel_pos;
-                        cans_pos = cat(1, cans_pos, can_abs_pos);
-                        i = i + 1;
+                        y_error = rem(y_diff,square);
+                        x_error = rem(x_diff,square);
 
+                        if ( (x_error > 70 && x_error < 120) || (y_error > 70 && y_error < 120) )
+                            wb_console_print(sprintf('DEBUG: Plechovku na relativní pozici [%f,%f] není možné přesně zaměřit', x_sqaure_diff, y_sqaure_diff), WB_STDOUT);
+                        else
+                            can_rel_pos = [x_sqaure_diff * -1, y_sqaure_diff];
+                            can_abs_pos = h.position + can_rel_pos;
+                            cans_pos = cat(1, cans_pos, can_abs_pos);
+                        end
+
+                    end
+
+                    % Crop the output to three cans
+                    if size(cans_pos, 1) > 3
+                        cans_pos = cans_pos(1:3,:);
                     end
 
                     h.align(h.default_alignment);
