@@ -1,10 +1,16 @@
-#VRML_SIM R2020b utf8
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/tables/protos/Table.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+
 WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 1 0 0 4.71238898038469
-  position 8.186912879615955e-13 5.980242741129292 -1.595456617282558e-12
+  orientation 0.011349525686152636 -0.6957401241321187 -0.7182039180757255 2.7881913495055604
+  position 2.853400389318938 1.64212343462901 -0.6866921481792494
   follow "robot"
   followType "None"
 }
@@ -15,10 +21,12 @@ TexturedBackgroundLight {
   texture "empty_office"
 }
 Table {
-  translation 0 -0.801 0
-  size 2 0.8 2
+  rotation 1 0 0 -1.5708003061004252
+  size 2 2 0.8
 }
 Floor {
+  translation 0 0.801 0
+  rotation 1 0 0 -1.5707996938995747
   size 2 2
   tileSize 2 2
   appearance Appearance {
@@ -30,10 +38,10 @@ Floor {
   }
 }
 DEF Ketchup_robot Robot {
-  translation 8.56161e-08 0.0075 0.79
+  translation 0 0.82 0.79
   rotation 0 1 0 2.85387e-06
   children [
-    DEF robot_body Transform {
+    DEF robot_body Pose {
       children [
         Shape {
           appearance Appearance {
@@ -166,24 +174,13 @@ DEF Ketchup_robot Robot {
   controller "ketchup_house_controller"
 }
 DEF Ketchup_robot Robot {
-  translation -5.40194e-06 0.0075 -0.8
+  translation 0 0.82 -0.8
   rotation 0 1 0 -3.1415853071795863
   children [
-    DEF robot_body Transform {
+    DEF robot_body Pose {
       children [
         Shape {
-          appearance Appearance {
-            material Material {
-              ambientIntensity 1
-              diffuseColor 0.752941 0.752941 0.752941
-              shininess 0.3125
-              specularColor 0.225882 0.225882 0.225882
-            }
-            texture ImageTexture {
-              url [
-                "textures/desktop_wood.jpg"
-              ]
-            }
+          appearance PBRAppearance {
           }
           geometry IndexedFaceSet {
             coord Coordinate {
@@ -309,7 +306,8 @@ DEF Ketchup_robot Robot {
   supervisor TRUE
 }
 DEF can Solid {
-  translation -0.22 0.0375 0
+  translation -0.22 0.84 0
+  rotation 1 0 0 -1.5707996938995747
   children [
     DEF can Shape {
       appearance Appearance {
@@ -341,7 +339,8 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation -0.22 0.0375 0.22
+  translation -0.22 0.84 0.22
+  rotation -1 0 0 1.5708
   children [
     DEF can Shape {
       appearance Appearance {
@@ -374,7 +373,8 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0.22 0.0375 0
+  translation 0.22 0.84 0
+  rotation 1 0 0 -1.5708003061004252
   children [
     DEF can Shape {
       appearance Appearance {
@@ -407,7 +407,8 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0.22 0.0375 -0.22
+  translation 0.22 0.84 -0.22
+  rotation 1 0 0 -1.5707996938995747
   children [
     DEF can Shape {
       appearance Appearance {
@@ -440,7 +441,8 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0.67 0.0375 -0.23
+  translation 0.67 0.84 -0.23
+  rotation 1 0 0 -1.5707996938995747
   children [
     DEF can Shape {
       appearance Appearance {
@@ -473,7 +475,8 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation -0.45 0.0375 -0.23
+  translation -0.45 0.84 -0.23
+  rotation 1 0 0 -1.5707996938995747
   children [
     DEF can Shape {
       appearance Appearance {
@@ -506,7 +509,8 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation -0.67 0.0375 0.22
+  translation -0.67 0.84 0.22
+  rotation 1 0 0 -1.5708003061004252
   children [
     DEF can Shape {
       appearance Appearance {
@@ -539,7 +543,8 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation 0.45 0.0375 0.22
+  translation 0.45 0.84 0.22
+  rotation 1 0 0 -1.5708003061004252
   children [
     DEF can Shape {
       appearance Appearance {
@@ -572,7 +577,8 @@ DEF can Solid {
   }
 }
 DEF can Solid {
-  translation -0.66 0.0375 0
+  translation -0.66 0.84 0
+  rotation 1 0 0 -1.5708003061004252
   children [
     DEF can Shape {
       appearance Appearance {
