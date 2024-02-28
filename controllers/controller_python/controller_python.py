@@ -3,9 +3,18 @@
 # You may need to import some classes of the controller module. Ex:
 #  from controller import Robot, Motor, DistanceSensor
 from controller import Robot
+import numpy as np
+
+storage_positions = [[7, 1], [7, 2], [7, 7], [7, 6]]
+
+robot_position = [[7, 4]]
+
+
+# Borders of scan angle
+scan_angle = [[65, 300]]
 
 # create the Robot instance.
-robot = Robot()
+can_bot = Robot('motor_left', 'motor_right', 'dst_front_can', 'dst_front_bot', 'compass', 'infra_left', 'infra_right', robot_position, storage_positions, scan_angle, 32)
 
 # get the time step of the current world.
 timestep = int(robot.getBasicTimeStep())

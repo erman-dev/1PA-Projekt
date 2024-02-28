@@ -9,9 +9,9 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 0.7583353909044203 0.09663585655663166 0.6446618851222758 4.7521575452156695
-  position -0.7396373878276916 1.554171385757194 -1.3079528954319208
-  follow "robot"
+  orientation 0.773004405437976 0.0720351140341342 0.6302976531128535 4.698551418316954
+  position -0.7335547980469634 1.5676740097141117 -1.2759298011042517
+  follow "CanBot"
   followType "None"
 }
 TexturedBackground {
@@ -85,7 +85,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint Solid {
         translation -0.0625 0.02 -0.12
-        rotation 0.577656895078166 0.5771968951617173 0.5771968951617173 2.09394
+        rotation 0.577656895078166 0.5771968951617172 0.5771968951617172 2.09394
         children [
           DEF wheel Shape {
             appearance PBRAppearance {
@@ -116,7 +116,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint DEF wheel_right Solid {
         translation 0.0625 0.02 -0.12
-        rotation 0.577656895078166 0.5771968951617173 0.5771968951617173 2.09394
+        rotation 0.577656895078166 0.5771968951617172 0.5771968951617172 2.09394
         children [
           USE wheel
         ]
@@ -167,11 +167,12 @@ DEF Ketchup_robot Robot {
       rotationStep 0.05
     }
   ]
+  name "CanBot"
   boundingObject USE robot_body
   physics Physics {
     density 2000
   }
-  controller "ketchup_house_controller"
+  controller "controller_python"
 }
 DEF Ketchup_robot Robot {
   translation 0 0.82 -0.8
@@ -215,7 +216,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint Solid {
         translation -0.0625 0.02 -0.12
-        rotation 0.577656895078166 0.5771968951617173 0.5771968951617173 2.09394
+        rotation 0.577656895078166 0.5771968951617172 0.5771968951617172 2.09394
         children [
           DEF wheel Shape {
             appearance PBRAppearance {
@@ -246,7 +247,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint DEF wheel_right Solid {
         translation 0.0625 0.02 -0.12
-        rotation 0.577656895078166 0.5771968951617173 0.5771968951617173 2.09394
+        rotation 0.577656895078166 0.5771968951617172 0.5771968951617172 2.09394
         children [
           USE wheel
         ]
@@ -302,7 +303,7 @@ DEF Ketchup_robot Robot {
   physics Physics {
     density 2000
   }
-  controller "ketchup_house_controller_enemy"
+  controller "<none>"
   supervisor TRUE
 }
 DEF can Solid {
