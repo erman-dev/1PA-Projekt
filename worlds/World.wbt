@@ -9,8 +9,8 @@ WorldInfo {
   coordinateSystem "NUE"
 }
 Viewpoint {
-  orientation 0.011349525686152636 -0.6957401241321187 -0.7182039180757255 2.7881913495055604
-  position 2.853400389318938 1.64212343462901 -0.6866921481792494
+  orientation 0.7583353909044203 0.09663585655663166 0.6446618851222758 4.7521575452156695
+  position -0.7396373878276916 1.554171385757194 -1.3079528954319208
   follow "robot"
   followType "None"
 }
@@ -85,7 +85,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint Solid {
         translation -0.0625 0.02 -0.12
-        rotation 0 0 1 1.57
+        rotation 0.577656895078166 0.5771968951617173 0.5771968951617173 2.09394
         children [
           DEF wheel Shape {
             appearance PBRAppearance {
@@ -116,7 +116,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint DEF wheel_right Solid {
         translation 0.0625 0.02 -0.12
-        rotation 0 0 1 1.57
+        rotation 0.577656895078166 0.5771968951617173 0.5771968951617173 2.09394
         children [
           USE wheel
         ]
@@ -215,7 +215,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint Solid {
         translation -0.0625 0.02 -0.12
-        rotation 0 0 1 1.57
+        rotation 0.577656895078166 0.5771968951617173 0.5771968951617173 2.09394
         children [
           DEF wheel Shape {
             appearance PBRAppearance {
@@ -246,7 +246,7 @@ DEF Ketchup_robot Robot {
       ]
       endPoint DEF wheel_right Solid {
         translation 0.0625 0.02 -0.12
-        rotation 0 0 1 1.57
+        rotation 0.577656895078166 0.5771968951617173 0.5771968951617173 2.09394
         children [
           USE wheel
         ]
