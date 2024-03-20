@@ -76,4 +76,52 @@ class Canbot:
     def scan_cans(self):
         """
         Return coordinates of the three nearest cans."""
-        pass
+        # Turn the robot to angle 1 of the scan
+        self.turn(self.scan_angle[0])
+        
+        # Start the scan
+        # Turn the robot to angle 2 of the scan
+        scan_data = []
+        self.motor_left.setVelocity(self.speed_default)
+        self.motor_right.setVelocity(-self.speed_default)
+        
+        while(self.compass.getValue() < self.scan_angle[1]):
+            # Get the distance to the can and the angle
+            distance_can = self.dst_front_can.getValue()
+            distance_bot = self.dst_front_bot.getValue()
+            angle = self.compass.getValue()
+
+            # Skip if the distance is too large
+            if distance_can != 1000:
+                # If the distance to the can is significantly different from the previous distance, save the data
+                if abs(distance_can - prev_distance) > 50:
+                    # Only save the data if the can is not the robot
+                    if abs(distance_can - distance_bot) > 200:
+                        scan_data.append([distance_can, angle])
+                
+            prev_distance = distance_can
+        
+        # Stop the scan, return to the default orientation
+        self.turn(self.default_alignment)
+        
+        # Convert the distance and angle data to coordinates
+        cans = []
+        for distance, angle in scan_data:
+            # Calculate the x and y coordinates based on distance and angle
+            x = distance * cos(angle)
+            y = distance * sin(angle) - 30
+            
+            # Round the coordinates to the nearest grid point
+            x_grid = round(x / 200)
+            y_grid = round(y / 200)
+
+            # Skip if the position error is larger than 50
+            if (x % 200 > 50) or (y % 200 > 50):
+                continue
+            
+            # Add the coordinates to the list of cans
+            cans.append([x_grid, y_grid])
+
+        # Return the three nearest cans
+        cans_sorted = sorted(cans, key=lambda pos: (abs(pos[0] - self.position[0]) + abs(pos[1] - self.position[1])))
+        return cans_sorted[:min(3, len(cans_sorted))]
