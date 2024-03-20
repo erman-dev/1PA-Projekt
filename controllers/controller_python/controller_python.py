@@ -3,39 +3,34 @@
 # You may need to import some classes of the controller module. Ex:
 #  from controller import Robot, Motor, DistanceSensor
 from controller import Robot
-import numpy as np
+from can_bot import CanBot
 
 storage_positions = [[7, 1], [7, 2], [7, 7], [7, 6]]
-
 robot_position = [[7, 4]]
-
 
 # Borders of scan angle
 scan_angle = [[65, 300]]
 
 # create the Robot instance.
-can_bot = Robot('motor_left', 'motor_right', 'dst_front_can', 'dst_front_bot', 'compass', 'infra_left', 'infra_right', robot_position, storage_positions, scan_angle, 32)
+robot = Robot()
+can_bot = CanBot(robot, sdfas)
 
 # get the time step of the current world.
 timestep = int(robot.getBasicTimeStep())
 
-# You should insert a getDevice-like function in order to get the
-# instance of a device of the robot. Something like:
-#  motor = robot.getDevice('motorname')
-#  ds = robot.getDevice('dsname')
-#  ds.enable(timestep)
-
-# Main loop:
-# - perform simulation steps until Webots is stopping the controller
 while robot.step(timestep) != -1:
-    # Read the sensors:
-    # Enter here functions to read sensor data, like:
-    #  val = ds.getValue()
+	# Initiate scan
+	cans = can_bot.scan_cans()
 
-    # Process sensor data here.
-
-    # Enter here functions to send actuator commands, like:
-    #  motor.setPosition(10.0)
-    pass
-
-# Enter here exit cleanup code.
+	# Exit if there are no more cans
+	if len(cans) == 0:
+		#wb_console_print(sprintf('No more cans to pick up'), WB_STDOUT);
+		can_bot.align(can_bot.default_alignment)
+		break
+	
+	# Pickup cans 
+	for can in cans:
+		can_bot.go_coordinates(can)
+	
+	# Store cans
+	can_bot.store_cans()
