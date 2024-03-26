@@ -1,9 +1,11 @@
 from controller import Robot, DistanceSensor
 from math import sqrt
 from math import cos, sin
+import numpy as np
+
 
 class Canbot:
-    def __init__(self, 
+    def __init__(self,
                  robot: Robot,
                  motor_left: str, 
                  motor_right: str,
@@ -59,7 +61,94 @@ class Canbot:
 
     def travel(self, n_steps):
         """ Go speicified number of steps forwards of backwards."""
-        pass
+        steps_to_travel = n_steps
+        direction = np.sign(n_steps)
+        robot_bearing = [0, 1]  #self.get_bearing
+        ir_prev = 1000
+        on_line = 0
+        off_line = 0
+        
+        # Variables for collision avoidance
+        nr_measurements = 0
+        d_front_bot_prev = 1000
+        robot_passing = 0
+        d_diff_threshold = 300 # Distance sifference threshold
+        d_dist_threshold = 200 # Threshold distance
+        stop_counter = 0
+        ir_trend = 0 
+
+        # Go!
+        self.motor_left.setVelocity(self.speed_default * direction)
+        self.motor_right.setVelocity(self.speed_default * direction)
+       
+        while self.time_step != -1:
+            print("Hello World!")
+            ir_left = self.infra_left.getValue()
+            ir_right = self.infra_right.getValue()
+            
+            ir_rep = (ir_left + ir_right)/2
+            nr_measurements = nr_measurements + 1
+
+            if (abs(ir_rep - ir_prev) > 1):
+                ir_trend = np.sign(ir_rep - ir_prev)
+
+            # Prevent colision with enemy robot
+            d_front_bot = self.dst_front_bot.getValue()
+            d_front_diff = d_front_bot_prev - d_front_bot 
+
+            # Robot detected passing in front of us
+            if (d_front_diff > d_diff_threshold):
+                robot_passing = 1
+            elif (d_front_bot < d_dist_threshold and bool(robot_passing)):
+                success = 0
+                return
+            
+            # If the enemy robot is passing in front of us and we come close - stop
+            if (bool(robot_passing) and d_front_bot < d_dist_threshold * 2):
+                self.motor_left.setVelocity(0)
+                self.motor_right.setVelocity(0)
+
+                while (self.time_step(self.timeStep) != -1 and d_front_bot != 1000):
+                    d_front_bot = self.dst_front_bot.getValue()
+                    stop_counter += 1
+
+                    if (stop_counter > 50):
+                        success = 0
+                        return
+
+                self.motor_left.setVelocity(self.speed_default * direction)
+                self.motor_right.setVelocity(self.speed_default * direction)   
+
+                robot_passing = 0
+
+            if (ir_trend == 1):
+                on_line = 1
+            elif ((ir_trend == 0 or ir_trend == -1) and bool(on_line)):
+                off_line = 1
+            
+            # Ignore if the robot detects a line in the first few measurements
+            # after start and after every line
+            if (bool(on_line) and bool(off_line) and nr_measurements < 80/self.speed_default):
+                on_line = 0
+                off_line = 0
+            elif (bool(on_line) and bool(off_line)):
+                self.position = self.position + robot_bearing * direction
+                steps_to_travel = steps_to_travel - np.sign(steps_to_travel)
+                on_line = 0
+                off_line = 0
+                nr_measurements = 0
+
+            # Destination reached
+            if (steps_to_travel == 0):
+                self.motor_left.setVelocity(0)
+                self.motor_right.setVelocity(0)
+                break
+
+            ir_prev = ir_rep
+            d_front_bot_prev = d_front_bot
+
+            success = 1
+
 
     def turn(self, angle):
         """ Turn the robot to a specified angle."""
